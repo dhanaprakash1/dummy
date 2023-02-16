@@ -133,10 +133,9 @@ class RFE_4753_Scheduled_Group_GMC_Promotion(unittest.TestCase):
 		assert count == 1 and groupname == "Default" and groupref == "gmcgroup/b25lLmdtY19ncm91cCREZWZhdWx0:Default"
                 print_and_log("*********** Test Case Execution Completed **********")
 
-
-        @pytest.mark.run(order=9)
-        def test_009_Validate_Default_GMC_Group(self):
-		test_case_title = "Test 009 Validate whether only Default Group is available"
+        @pytest.mark.run(order=101)
+        def test_101_Validate_Default_GMC_Group(self):
+		test_case_title = "Test 101 Validate whether only Default Group is available"
                 print_and_log_header(test_case_title)
                 res = Get_GMC_Groups(self); print_and_log(res)
                 count = Count_GMC_Groups(self, res); print_and_log("Number of groups : " + str(count))
@@ -144,9 +143,6 @@ class RFE_4753_Scheduled_Group_GMC_Promotion(unittest.TestCase):
                 print_and_log("Name of group : " + group_name); print_and_log("Ref of group : " + group_ref)
                 assert count == 1 and group_name == "Default" and group_ref == group_ref_Default
                 print_and_log_footer(test_case_title)
-
-
-
 
         @pytest.mark.run(order=2)
         def test_002_Validate_Default_GMC_Group_Details(self):
@@ -159,8 +155,8 @@ class RFE_4753_Scheduled_Group_GMC_Promotion(unittest.TestCase):
 		print_and_log(res)
                 count = len(res["members"])
                 #ToDo: Validate list of members
-		print_and_log("Number of groups : " + str(count))
-                assert count == 5
+		print_and_log("Number of members in Default Group : " + str(count))
+                assert count == 6
                 print_and_log("*********** Test Case Execution Completed **********")
 
         @pytest.mark.run(order=3)
@@ -171,19 +167,50 @@ class RFE_4753_Scheduled_Group_GMC_Promotion(unittest.TestCase):
 		print_and_log(get_data)
                 res = json.loads(get_data)
                 print_and_log(res)
-		assert res == "gmcgroup/b25lLmdtY19ncm91cCRncDE:gp1"
+		#assert res == "gmcgroup/b25lLmdtY19ncm91cCRncDE:gp1"
+		assert res == group_ref_gp1
                 #ToDo: Validate whether list of groups has 2 groups
                 print_and_log("*********** Test Case Execution Completed **********")
+        
+	#Negative Test Case
+	@pytest.mark.run(order=4)
+        def test_004_Validate_Creation_of_Existing_GMC_Group_is_not_possible(self):
+        	test_case_title = "Test 004 Validate_Creation_of_Existing_GMC_Group_is_not_possible"
+	        print_and_log_header(test_case_title)
+                data = {"name":"gp1"}
+                get_data = ib_NIOS.wapi_request('POST', object_type="gmcgroup", fields=json.dumps(data))
+                print_and_log(get_data)
+		errortext1 = get_data[1] 
+                print_and_log(errortext1)
+                assert re.search(r"Duplicate object 'gp1' of type 'gmc_group' already exists in the database.", errortext1)
+		print_and_log_footer(test_case_title)
 
-        @pytest.mark.run(order=4)
-        def test_004_Validate_Adding_Members_to_GMC_Group(self):
+        @pytest.mark.run(order=5)
+        def test_005_Validate_Creation_of_Default_GMC_Group_is_not_possible(self):
+                test_case_title = "Test 005 Validate_Creation_of_Default_GMC_Group_is_not_possible"
+                print_and_log_header(test_case_title)
+                data = {"name":"Default"}
+                get_data = ib_NIOS.wapi_request('POST', object_type="gmcgroup", fields=json.dumps(data))
+                print_and_log(get_data)
+                errortext1 = get_data[1]
+                print_and_log(errortext1)
+                assert re.search(r"Duplicate object 'Default' of type 'gmc_group' already exists in the database.", errortext1)
+                print_and_log_footer(test_case_title)
+
+        @pytest.mark.run(order=6)
+        def test_006_Validate_Adding_Members_to_GMC_Group(self):
                 print_and_log("\n********** Validate Addition of Members to GMC Group **********")
-		data = {"members":[{"member":"vm-sa1.infoblox.com"}]}
+		#member_name = "vm-sa1.infoblox.com"
+                member_name = config.grid1_member2_fqdn
+		data = 	{"members":[{"member": member_name}]}
+		#data = {"members":[{"member":"vm-sa1.infoblox.com"}]}
+		print_and_log("member data :"+ str(data))
 		get_data = ib_NIOS.wapi_request('PUT', object_type=""+group_ref_gp1, fields=json.dumps(data))
 		print_and_log(get_data)
                 res = json.loads(get_data)
                 print_and_log(res)
-                assert res == "gmcgroup/b25lLmdtY19ncm91cCRncDE:gp1"
+                #assert res == "gmcgroup/b25lLmdtY19ncm91cCRncDE:gp1"
+                assert res == group_ref_gp1
 		# Validate member is added to gp1 group
                 get_data = ib_NIOS.wapi_request('GET', object_type=""+group_ref_gp1+"?_return_fields=name,comment,gmc_promotion_policy,scheduled_time,members,time_zone")
                 print_and_log(get_data)
@@ -195,9 +222,37 @@ class RFE_4753_Scheduled_Group_GMC_Promotion(unittest.TestCase):
                 assert count == 1
                 #ToDo: Validate member is moved out of default group as it is moved to new group
                 print_and_log("*********** Test Case Execution Completed **********")
+       
+        #Negative Test Case
+        @pytest.mark.run(order=7)
+        def test_007_Validate_Adding_GMC_to_Custom_GMC_Group_should_Fail(self):
+                print_and_log("\n********** Validate Addition of GMC to Custom GMC Group Should Fail **********")
+                # Add function to make a memebr GMC
+		#data = {"members":[{"member":"vm-sa1.infoblox.com"}, {"member":"gmc1.infoblox.com"}]}
+		#member1_fqdn = "vm-sa1.infoblox.com"
+                #member2_fqdn = "gmc1.infoblox.com"
+		member1_fqdn = config.grid1_member1_fqdn
+                member2_fqdn = config.grid1_member2_fqdn
+		data = {"members":[{"member": member1_fqdn}, {"member": member2_fqdn}]}
+                get_data = ib_NIOS.wapi_request('PUT', object_type=""+group_ref_gp1, fields=json.dumps(data))
+                print_and_log(get_data)
+                errortext1 = get_data[1]
+                print_and_log(errortext1)
+                assert re.search(r"GMC members are not allowed in GMC promotion groups", errortext1)
+                # Validate member is added to gp1 group
+                get_data = ib_NIOS.wapi_request('GET', object_type=""+group_ref_gp1+"?_return_fields=name,comment,gmc_promotion_policy,scheduled_time,members,time_zone")
+                print_and_log(get_data)
+                res = json.loads(get_data)
+                print_and_log(res)
+                count = len(res["members"])
+                #ToDo: Validate list of members
+                print_and_log("Number of groups : " + str(count))
+                assert count == 1
+                #ToDo: Validate member is NOT moved out of default group as it is moved to new group
+                print_and_log("*********** Test Case Execution Completed **********")
 
-        @pytest.mark.run(order=5)
-        def test_005_Validate_Updating_SCHEDULED_TIME_and_GMC_PROMOTION_POLICY_to_GMC_Group(self):
+        @pytest.mark.run(order=8)
+        def test_008_Validate_Updating_SCHEDULED_TIME_and_GMC_PROMOTION_POLICY_to_GMC_Group(self):
                 print_and_log("\n********** Validate Updation of Scheduled Time and GMC Promotion Policy to GMC Group **********")
                 data = {"scheduled_time": 1675772044,"gmc_promotion_policy":"SEQUENTIALLY"}
                 get_data = ib_NIOS.wapi_request('PUT', object_type=""+group_ref_gp1, fields=json.dumps(data))
@@ -215,8 +270,8 @@ class RFE_4753_Scheduled_Group_GMC_Promotion(unittest.TestCase):
                 assert gmc_promotion_policy == "SEQUENTIALLY" and scheduled_time == data["scheduled_time"]
                 print_and_log("*********** Test Case Execution Completed **********")
 
-        @pytest.mark.run(order=6)
-        def test_006_Validate_Deletion_of_GMC_Group(self):
+        @pytest.mark.run(order=9)
+        def test_009_Validate_Deletion_of_GMC_Group(self):
                 print_and_log("\n********** Validate Deletion of GMC Group **********")
                 get_data = ib_NIOS.wapi_request('DELETE', object_type=""+group_ref_gp1)
                 print_and_log(get_data)
@@ -239,8 +294,8 @@ class RFE_4753_Scheduled_Group_GMC_Promotion(unittest.TestCase):
 
 
 	# GMC Schedule Object Testing
-        @pytest.mark.run(order=7)
-        def test_007_Getting_GMC_Schedule_Object(self):
+        @pytest.mark.run(order=10)
+        def test_010_Getting_GMC_Schedule_Object(self):
                 print_and_log("\n********** Validating GMC Schedule Object **********")
                 get_data = ib_NIOS.wapi_request('GET', object_type="gmcschedule/"+group_schedule_ref+"?_return_fields=activate_gmc_group_schedule,gmc_groups")
                 print_and_log(get_data)
@@ -252,8 +307,8 @@ class RFE_4753_Scheduled_Group_GMC_Promotion(unittest.TestCase):
                 print_and_log("*********** Test Case Execution Completed **********")
 
 
-        @pytest.mark.run(order=8)
-        def test_008_Activating_GMC_Schedule(self):
+        @pytest.mark.run(order=11)
+        def test_011_Activating_GMC_Schedule(self):
                 print_and_log("\n********** Activating GMC Schedule **********")
 		data = {"activate_gmc_group_schedule": True}
                 get_data = ib_NIOS.wapi_request('PUT', object_type="gmcschedule/"+group_schedule_ref, fields=json.dumps(data))
@@ -278,30 +333,30 @@ class RFE_4753_Scheduled_Group_GMC_Promotion(unittest.TestCase):
                 print_and_log("*********** Test Case Execution Completed **********")
 
 
-
-        @pytest.mark.run(order=10)
-    	def test_010_Making_normal_member_as_GMC(self):
-        	logging.info("making normal member as GMC ")
-        	get_ref = ib_NIOS.wapi_request('GET', object_type="member", grid_vip=config.grid_vip)
-        	#ref1 = json.loads(get_ref)[0]['_ref']
-        	res = json.loads(get_ref)
-        	res = eval(json.dumps(res))
-        	print(res)
-        	ref1=(res)[1]['_ref']
-        	print(ref1)
-		"""
+        @pytest.mark.run(order=12)
+    	def test_012_Making_normal_member_as_GMC(self):
+		logging.info("making normal member as GMC ")
+        	print_and_log("\n********** Making Normal Member as GMC  **********")
+		# get members of a ref and ref of member 1
+		#master_vip = config.grid1_master_vip 
+		master_ip = "10.35.183.7"
+		print_and_log("grid_master_vip is " + master_ip)
+        	#get_ref = ib_NIOS.wapi_request('GET', object_type="member", grid_vip=config.grid_vip)
+		get_ref = ib_NIOS.wapi_request('GET', object_type="member", grid_vip=master_ip)
+        	print_and_log(get_ref)
+		ref1 = json.loads(get_ref)[1]['_ref']
+		print_and_log("grid_member 1 ref is " + ref1)
+		# make member 1 master candidate
+                #member_vip = config.grid_vip
+		member_vip = "10.20.0.20"
 		data1 = {"master_candidate": True}
+        	#output1 = ib_NIOS.wapi_request('PUT',ref=ref1,fields=json.dumps(data1),grid_vip=config.grid_vip)
         	output1 = ib_NIOS.wapi_request('PUT',ref=ref1,fields=json.dumps(data1),grid_vip=config.grid_vip)
-        	print(output1)
-        	ref2=(res)[4]['_ref']
-        	print(ref2)
-        	data2 = {"master_candidate": True}
-        	output2 = ib_NIOS.wapi_request('PUT',ref=ref2,fields=json.dumps(data2),grid_vip=config.grid_vip)
-        	print(output2)
-        	sleep(600)
+        	print_and_log(output1)
+        	#sleep(600)
         	print("-----------Test Case 10 Execution Completed------------")
 
-		"""
+
 
       
 
