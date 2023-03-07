@@ -852,23 +852,20 @@ class RFE_4753_Scheduled_Group_GMC_Promotion(unittest.TestCase):
         @pytest.mark.run(order=21)
         def test_021_Test_Scheduled_GMC_Promotion(self):
                 # Activate GMC group schedule
-                #Activate_GMC_Schedule()        
+                Activate_GMC_Schedule()        
 
-                #config.grid_vip = "10.35.159.21"
-                #config.member_fqdn = "ib-10-35-196-6.infoblox.com"
-                #config.grid_member5_vip = "10.35.196.6"
+		#config.grid_vip = "10.35.135.10"
+                #config.member5_fqdn = "ib-10-35-112-3.infoblox.com"
+                #config.grid_member5_vip = "10.35.112.3" 
                 
-		config.grid_vip = "10.35.135.10"
-                config.member5_fqdn = "ib-10-35-112-3.infoblox.com"
-                config.grid_member5_vip = "10.35.112.3" 
-                # Promote Master
+		# Promote Master
                 master_vip = config.grid_vip
                 member_fqdn = config.member5_fqdn
                 member_vip = config.grid_member5_vip
-                #GMC_promote_member_as_master_candidate(master_vip, member_fqdn)
-                #promote_master_new(member_vip)
-                #check_able_to_login_appliances(member_vip)
-                #validate_status_GM_after_GMC_promotion(member_vip)
+                GMC_promote_member_as_master_candidate(master_vip, member_fqdn)
+                promote_master_new(member_vip)
+                check_able_to_login_appliances(member_vip)
+                validate_status_GM_after_GMC_promotion(member_vip)
                 #To Do: Validate Timestamps
                 #To Do: validate scheduled time cannot be changed when promotion is in progress
                 #To Do: validate memebr assignment  cannot be changed when promotion is in progress
