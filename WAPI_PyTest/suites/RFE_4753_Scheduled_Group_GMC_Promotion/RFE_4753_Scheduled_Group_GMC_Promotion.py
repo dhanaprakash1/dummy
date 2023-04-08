@@ -562,7 +562,8 @@ def Poweron_the_member(eng_lab_id):
 def get_current_epoch_time():
     print_and_log("Function: get_current_epoch_time")
     current_epoch_time = int(time.time())
-    return current_epoch_time
+    current_epoch_time_DST = add_minutes_to_epoch_time(current_epoch_time, 60)
+    return current_epoch_time_DST
 
 def add_minutes_to_epoch_time(epoch_time, minutes_to_add):
     print_and_log("Function: add_minutes_to_epoch_time")
@@ -1099,12 +1100,12 @@ class RFE_4753_Scheduled_Group_GMC_Promotion(unittest.TestCase):
                 list_members = Get_jsonList_of_members_in_GMCGroup(group_ref_Default)
 		print_and_log("List of members in of group ref : " + group_ref_Default + " is " + str(list_members))
                 #[{u'member': u'infoblox.localdomain'}, {u'member': u'gmc1.infoblox.com'}, {u'member': u'gmc2.infoblox.com'}]
-		expected_member_list = [config.grid1_member_fqdn, config.grid1_member1_fqdn, config.grid1_member2_fqdn, config.grid1_member3_fqdn, config.grid1_member4_fqdn, config.grid1_member5_fqdn]
+		expected_member_list = [config.grid1_master_fqdn, config.grid1_member1_fqdn, config.grid1_member2_fqdn, config.grid1_member3_fqdn, config.grid1_member4_fqdn, config.grid1_member5_fqdn]
 		assert expected_member_list.sort() == list_members.sort()
 		print_and_log("*********** Test Case Execution Completed **********")
 
         @pytest.mark.run(order=2)
-        def test_2_Validate_Default_GMC_Group(self):
+        def test_002_Validate_Default_GMC_Group(self):
 		test_case_title = "Test 101 Validate whether only Default Group is available"
                 print_and_log_header(test_case_title)
                 res = Get_GMC_Groups(); 
@@ -1166,7 +1167,7 @@ class RFE_4753_Scheduled_Group_GMC_Promotion(unittest.TestCase):
                 print_and_log("current time is " + str(current_epoch_time))
                 schedule_group_time = add_minutes_to_epoch_time(current_epoch_time, 10)
                 print_and_log("current time + 10 minutes is " + str(schedule_group_time))
-                data = {"name":"gp2","gmc_promotion_policy": "SIMULTANEOUSLY","members": [{"member": config.grid1_member2_fqdn}, {"member": config.grid2_member2_fqdn}],"scheduled_time": schedule_group_time}
+                data = {"name":"gp2","gmc_promotion_policy": "SIMULTANEOUSLY","members": [{"member": config.grid1_member1_fqdn}, {"member": config.grid1_member2_fqdn}],"scheduled_time": schedule_group_time}
                 get_data = ib_NIOS.wapi_request('POST', object_type="gmcgroup", fields=json.dumps(data))
                 print_and_log(get_data)
                 res = json.loads(get_data)
@@ -1176,7 +1177,7 @@ class RFE_4753_Scheduled_Group_GMC_Promotion(unittest.TestCase):
                 list_members = Get_jsonList_of_members_in_GMCGroup(group_ref_gp2)
                 print_and_log("List of members in of group ref : " + group_ref_gp2 + " is " + str(list_members))
                 #[{u'member': u'infoblox.localdomain'}, {u'member': u'gmc1.infoblox.com'}, {u'member': u'gmc2.infoblox.com'}]
-                expected_member_list = [config.grid1_member2_fqdn, config.grid_member2_fqdn]
+                expected_member_list = [config.grid1_member1_fqdn, config.grid1_member2_fqdn]
                 assert expected_member_list.sort() == list_members.sort()
 		#Delete GMC group
                 Delete_GMC_Group(group_ref_gp2)
@@ -1185,8 +1186,8 @@ class RFE_4753_Scheduled_Group_GMC_Promotion(unittest.TestCase):
         @pytest.mark.run(order=7)
         def test_007_Validate_Creation_of_GMC_Group_with_Duplicate_members(self):
                 print_and_log("\n********** Validate Creation of Group with members **********")
-                config.grid1_member1_fqdn = "vm-ha1.infoblox.com" 
-		config.grid1_member2_fqdn = "vm-sa1.infoblox.com"
+                #config.grid1_member1_fqdn = "vm-ha1.infoblox.com" 
+		#config.grid1_member2_fqdn = "vm-sa1.infoblox.com"
 		current_epoch_time = get_current_epoch_time()
                 print_and_log("current time is " + str(current_epoch_time))
                 schedule_group_time = add_minutes_to_epoch_time(current_epoch_time, 10)
@@ -1256,15 +1257,15 @@ class RFE_4753_Scheduled_Group_GMC_Promotion(unittest.TestCase):
 		list_members = Get_jsonList_of_members_in_GMCGroup(group_ref_Default)
                 print_and_log("List of members in of group ref : " + group_ref_Default + " is " + str(list_members))
                 #[{u'member': u'infoblox.localdomain'}, {u'member': u'gmc1.infoblox.com'}, {u'member': u'gmc2.infoblox.com'}]
-                expected_member_list = [config.grid1_member_fqdn, config.grid1_member3_fqdn, config.grid1_member4_fqdn, config.grid1_member5_fqdn]
+                expected_member_list = [config.grid1_master_fqdn, config.grid1_member3_fqdn, config.grid1_member4_fqdn, config.grid1_member5_fqdn]
                 assert expected_member_list.sort() == list_members.sort()
                 #Validate memebers in the group
 		list_members = Get_jsonList_of_members_in_GMCGroup(group_ref_gp1)
                 print_and_log("List of members in of group ref : " + group_ref_gp1 + " is " + str(list_members))
                 #[{u'member': u'infoblox.localdomain'}, {u'member': u'gmc1.infoblox.com'}, {u'member': u'gmc2.infoblox.com'}]
                 expected_member_list = [config.grid1_member1_fqdn, config.grid1_member2_fqdn]
-                assert expected_member_list[0] == list_members[0]
-		assert expected_member_list[1] == list_members[1]
+                assert expected_member_list[0] == list_members[0]["member"]
+		assert expected_member_list[1] == list_members[1]["member"]
                 print_and_log("*********** Test Case Execution Completed **********")
 
         @pytest.mark.run(order=110)
@@ -1292,21 +1293,21 @@ class RFE_4753_Scheduled_Group_GMC_Promotion(unittest.TestCase):
                 list_members = Get_jsonList_of_members_in_GMCGroup(group_ref_Default)
                 print_and_log("List of members in of group ref : " + group_ref_Default + " is " + str(list_members))
                 #[{u'member': u'infoblox.localdomain'}, {u'member': u'gmc1.infoblox.com'}, {u'member': u'gmc2.infoblox.com'}]
-                expected_member_list = [config.grid1_member_fqdn, config.grid1_member3_fqdn, config.grid1_member4_fqdn, config.grid1_member5_fqdn]
+                expected_member_list = [config.grid1_master_fqdn, config.grid1_member3_fqdn, config.grid1_member4_fqdn, config.grid1_member5_fqdn]
                 assert expected_member_list.sort() == list_members.sort()
                 #Validate memebers in the group
                 list_members = Get_jsonList_of_members_in_GMCGroup(group_ref_gp1)
                 print_and_log("List of members in of group ref : " + group_ref_gp1 + " is " + str(list_members))
                 #[{u'member': u'infoblox.localdomain'}, {u'member': u'gmc1.infoblox.com'}, {u'member': u'gmc2.infoblox.com'}]
                 expected_member_list = [config.grid1_member2_fqdn, config.grid1_member1_fqdn]
-                assert expected_member_list[0] == list_members[0]
-                assert expected_member_list[1] == list_members[1]
+                assert expected_member_list[0] == list_members[0]["member"]
+                assert expected_member_list[1] == list_members[1]["member"]
                 print_and_log("*********** Test Case Execution Completed **********")
 
         @pytest.mark.run(order=111)
         def test_111_Validate_Changing_Policy_does_not_change_order_of_Members_to_GMC_Group(self):
                 print_and_log("\n********** Validate Changing Policy does not change Order of Members to GMC Group **********")
-                data =  {"gmc_promotion_policy": "SIMULTANEOUSLY"}
+                data =  {"gmc_promotion_policy": "SEQUENTIALLY"}
                 #data = {"members":[{"member":"vm-sa1.infoblox.com"}]}
                 print_and_log("member data :"+ str(data))
                 get_data = ib_NIOS.wapi_request('PUT', object_type=""+group_ref_gp1, fields=json.dumps(data))
@@ -1320,34 +1321,32 @@ class RFE_4753_Scheduled_Group_GMC_Promotion(unittest.TestCase):
                 print_and_log(get_data)
                 res = json.loads(get_data)
                 print_and_log(res)
-                count = len(res["members"])
-                #ToDo: Validate list of members
-                print_and_log("Number of groups : " + str(count))
-                assert count == 2
+                assert data["gmc_promotion_policy"] == res["gmc_promotion_policy"]
+
                 #Validate member is moved out of default group as it is moved to new group
                 list_members = Get_jsonList_of_members_in_GMCGroup(group_ref_Default)
                 print_and_log("List of members in of group ref : " + group_ref_Default + " is " + str(list_members))
                 #[{u'member': u'infoblox.localdomain'}, {u'member': u'gmc1.infoblox.com'}, {u'member': u'gmc2.infoblox.com'}]
-                expected_member_list = [config.grid1_member_fqdn, config.grid1_member3_fqdn, config.grid1_member4_fqdn, config.grid1_member5_fqdn]
+                expected_member_list = [config.grid1_master_fqdn, config.grid1_member3_fqdn, config.grid1_member4_fqdn, config.grid1_member5_fqdn]
                 assert expected_member_list.sort() == list_members.sort()
                 #Validate memebers in the group
                 list_members = Get_jsonList_of_members_in_GMCGroup(group_ref_gp1)
                 print_and_log("List of members in of group ref : " + group_ref_gp1 + " is " + str(list_members))
                 #[{u'member': u'infoblox.localdomain'}, {u'member': u'gmc1.infoblox.com'}, {u'member': u'gmc2.infoblox.com'}]
                 expected_member_list = [config.grid1_member2_fqdn, config.grid1_member1_fqdn]
-                assert expected_member_list[0] == list_members[0]
-                assert expected_member_list[1] == list_members[1]
+                assert expected_member_list[0] == list_members[0]["member"]
+                assert expected_member_list[1] == list_members[1]["member"]
                 print_and_log("*********** Test Case Execution Completed **********")
 
-        @pytest.mark.run(order=11)
-        def test_011_Validate_Adding_GMC_to_Custom_GMC_Group_should_Fail(self):
+        #@pytest.mark.run(order=11)
+        def removedtest_011_Validate_Adding_GMC_to_Custom_GMC_Group_should_Fail(self):
                 print_and_log("\n********** Validate Addition of GMC to Custom GMC Group Should Fail **********")
                 # Add function to make a memebr GMC
                 #data = {"members":[{"member":"vm-sa1.infoblox.com"}, {"member":"gmc1.infoblox.com"}]}
-                member1_fqdn = "vm-sa1.infoblox.com"
-                member2_fqdn = "gmc1.infoblox.com"
-                #member1_fqdn = config.grid1_member1_fqdn
-                #member2_fqdn = config.grid1_member2_fqdn
+                #member1_fqdn = "vm-sa1.infoblox.com"
+                #member2_fqdn = "gmc1.infoblox.com"
+                member1_fqdn = config.grid1_member1_fqdn
+                member2_fqdn = config.grid1_member2_fqdn
                 data = {"members":[{"member": member1_fqdn}, {"member": member2_fqdn}]}
                 get_data = ib_NIOS.wapi_request('PUT', object_type=""+group_ref_gp1, fields=json.dumps(data))
                 print_and_log(get_data)
@@ -1374,7 +1373,7 @@ class RFE_4753_Scheduled_Group_GMC_Promotion(unittest.TestCase):
                 print_and_log("current time is " + str(current_epoch_time))
                 schedule_group_time_gp1 = add_minutes_to_epoch_time(current_epoch_time, 10)
                 print_and_log("current time + 10 minutes is " + str(schedule_group_time_gp1))
-		data = {"scheduled_time": schedule_group_time_gp1,"gmc_promotion_policy":"SEQUENTIALLY"}
+		data = {"scheduled_time": schedule_group_time_gp1,"gmc_promotion_policy": "SEQUENTIALLY"}
                 get_data = ib_NIOS.wapi_request('PUT', object_type=""+group_ref_gp1, fields=json.dumps(data))
                 print_and_log(get_data)
                 res = json.loads(get_data)
@@ -1387,19 +1386,47 @@ class RFE_4753_Scheduled_Group_GMC_Promotion(unittest.TestCase):
                 print_and_log(res)
                 gmc_promotion_policy = res["gmc_promotion_policy"]
                 scheduled_time = res["scheduled_time"]
-                assert gmc_promotion_policy == "SEQUENTIALLY" and scheduled_time == data["scheduled_time"]
+                print_and_log("gmc_promotion_policy is " + gmc_promotion_policy + "and scheduled_time is " + str(scheduled_time))
+                assert res["gmc_promotion_policy"] == data["gmc_promotion_policy"]
+		assert res["scheduled_time"] == data["scheduled_time"]
                 print_and_log("*********** Test Case Execution Completed **********")
 
-        @pytest.mark.run(order=13)
-        def test_013_Validate_Updating_SCHEDULED_TIME_and_GMC_PROMOTION_POLICY_to_Default_GMC_Group(self):
-                print_and_log("\n********** Validate Updation of Scheduled Time and GMC Promotion Policy to GMC Group **********")
+        @pytest.mark.run(order=113)
+        def test_113_Validate_GMC_PROMOTION_POLICY_of_Default_GMC_Group(self):
                 # Validate gmcpromotion and Scheduled Time in Default Group [EXPECTED to FAIL as we have a bug]
                 get_data = ib_NIOS.wapi_request('GET', object_type=""+group_ref_Default+"?_return_fields=name,comment,gmc_promotion_policy,scheduled_time,members,time_zone")
                 print_and_log(get_data)
                 res = json.loads(get_data)
                 print_and_log(res)
                 gmc_promotion_policy = res["gmc_promotion_policy"]
-                assert gmc_promotion_policy == "SEQUENTIALLY"
+                assert gmc_promotion_policy == "SIMULTANEOUSLY"
+                print_and_log("*********** Test Case Execution Completed **********")
+
+        @pytest.mark.run(order=114)
+        def test_114_Validate_Updating_GMC_PROMOTION_POLICY_to_Default_GMC_Group(self):
+                print_and_log("\n********** Validate Updation of GMC Promotion Policy to GMC Group **********")
+                data = {"gmc_promotion_policy": "SEQUENTIALLY"}
+                get_data = ib_NIOS.wapi_request('PUT', object_type=""+group_ref_Default, fields=json.dumps(data))
+                print_and_log(get_data)
+                errortext1 = get_data[1]
+                print_and_log(errortext1)
+                assert re.search(r"Upating promotion policy on Default group is not allowed", errortext1)
+                print_and_log("*********** Test Case Execution Completed **********")
+
+        @pytest.mark.run(order=13)
+        def test_013_Validate_Updating_SCHEDULED_TIME_to_Default_GMC_Group(self):
+                print_and_log("\n********** Validate Updation of Scheduled Time to GMC Group **********")
+		#get scheduled time                
+                current_epoch_time = get_current_epoch_time()
+                print_and_log("current time is " + str(current_epoch_time))
+                schedule_group_time_gp1 = add_minutes_to_epoch_time(current_epoch_time, 10)
+                print_and_log("current time + 10 minutes is " + str(schedule_group_time_gp1))
+                data = {"scheduled_time": schedule_group_time_gp1}
+                get_data = ib_NIOS.wapi_request('PUT', object_type=""+group_ref_Default, fields=json.dumps(data))
+                print_and_log(get_data)
+                errortext1 = get_data[1]
+                print_and_log(errortext1)
+                assert re.search(r"Upating scheduled time on default group is not allowed", errortext1)
                 print_and_log("*********** Test Case Execution Completed **********")
 
 
@@ -1442,8 +1469,8 @@ class RFE_4753_Scheduled_Group_GMC_Promotion(unittest.TestCase):
                 print_and_log("*********** Test Case Execution Completed **********")
 
         @pytest.mark.run(order=115)
-        def test_115_Activating_GMC_Schedule(self):
-                print_and_log("\n********** Activating GMC Schedule **********")
+        def test_115_Activating_GMC_Schedule_as_nonsuperuser(self):
+                print_and_log("\n********** Activating GMC Schedule as nonsuperuser **********")
 		#non_super_user_group1_name = "non_super_group1"
 		#non_super_user_group1_username1 = "ns_group1_user1"
 		#non_super_user_group1_password1 = "infoblox"
@@ -1498,17 +1525,17 @@ class RFE_4753_Scheduled_Group_GMC_Promotion(unittest.TestCase):
     	def test_016_Making_normal_member_as_GMC(self):
         	print_and_log("\n********** Making Normal Member as GMC  **********")
 		# get members of a ref and ref of member 1
-		#master_vip = config.grid1_master_vip 
-		master_vip = "10.35.151.10"
+		master_vip = config.grid1_master_vip 
+		#master_vip = "10.35.151.10"
 		print_and_log("grid_master_vip is " + master_vip)
         	#get_ref = ib_NIOS.wapi_request('GET', object_type="member", grid_vip=config.grid_vip)
 		get_ref = ib_NIOS.wapi_request('GET', object_type="member", grid_vip=master_vip)
         	print_and_log(get_ref)
 		ref1 = json.loads(get_ref)[1]['_ref']
 		print_and_log("grid_member 1 ref is " + ref1)
-		# make member 1 master candidate
-                #member_vip = config.grid1_member1_fqdn
-		member_vip = "10.20.0.20"
+		# make member 5 master candidate
+                member_vip = config.grid1_member5_fqdn
+		#member_vip = "10.20.0.20"
 		data1 = {"master_candidate": True}
         	#output1 = ib_NIOS.wapi_request('PUT',ref=ref1,fields=json.dumps(data1),grid_vip=config.grid_vip)
         	response = ib_NIOS.wapi_request('PUT',ref=ref1, fields=json.dumps(data1), grid_vip=master_vip)
@@ -1524,7 +1551,7 @@ class RFE_4753_Scheduled_Group_GMC_Promotion(unittest.TestCase):
                 	print("Success: set master candidate to true for member")
                 	assert True
         	#sleep(600)
-        	print("-----------Test Case 10 Execution Completed------------")
+        	print("-----------Test Case Execution Completed------------")
 
         #Negative Test Case
         @pytest.mark.run(order=17)
@@ -1534,9 +1561,9 @@ class RFE_4753_Scheduled_Group_GMC_Promotion(unittest.TestCase):
                 #data = {"members":[{"member":"vm-sa1.infoblox.com"}, {"member":"gmc1.infoblox.com"}]}
                 #member1_fqdn = "vm-sa1.infoblox.com"
                 #member2_fqdn = "gmc1.infoblox.com"
-                member1_fqdn = config.grid1_member1_fqdn
-                member2_fqdn = config.grid1_member2_fqdn
-                data = {"members":[{"member": member1_fqdn}, {"member": member2_fqdn}]}
+                member1_fqdn = config.grid1_member5_fqdn
+                #member2_fqdn = config.grid1_member2_fqdn
+                data = {"members":[{"member": member1_fqdn}]}
                 get_data = ib_NIOS.wapi_request('PUT', object_type=""+group_ref_gp1, fields=json.dumps(data))
                 print_and_log(get_data)
                 errortext1 = get_data[1]
@@ -1558,13 +1585,9 @@ class RFE_4753_Scheduled_Group_GMC_Promotion(unittest.TestCase):
         @pytest.mark.run(order=18)
         def test_018_Validate_Adding_GM_to_Custom_GMC_Group_should_Fail(self):
                 print_and_log("\n********** Validate Addition of GMC to Custom GMC Group Should Fail **********")
-                # Add function to make a memebr GMC
-                #data = {"members":[{"member":"vm-sa1.infoblox.com"}, {"member":"gmc1.infoblox.com"}]}
-                #member1_fqdn = "vm-sa1.infoblox.com"
-                #member2_fqdn = "gmc1.infoblox.com"
-                member1_fqdn = config.grid_fqdn
-                member2_fqdn = config.grid1_member2_fqdn
-                data = {"members":[{"member": member1_fqdn}, {"member": member2_fqdn}]}
+                member1_fqdn = config.grid1_master_fqdn
+                #member2_fqdn = config.grid1_member2_fqdn
+                data = {"members":[{"member": member1_fqdn}]}
                 get_data = ib_NIOS.wapi_request('PUT', object_type=""+group_ref_gp1, fields=json.dumps(data))
                 print_and_log(get_data)
                 errortext1 = get_data[1]
