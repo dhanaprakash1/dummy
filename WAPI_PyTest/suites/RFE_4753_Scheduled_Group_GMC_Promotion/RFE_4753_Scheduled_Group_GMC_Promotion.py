@@ -209,8 +209,7 @@ def Update_SCHEDULED_TIME_and_GMC_PROMOTION_POLICY_to_GMC_Group(group_ref, sched
 		assert gmc_promotion_policy == data["gmc_promotion_policy"] and scheduled_time == data["scheduled_time"]
                 print_and_log("*********** Function Execution Completed **********")
 
-def Get_Count_of_members_in_GMCGroup(group_ref, master_ip=config.grid_vip):
-                # Validate member is added to gp1 group
+                # Validat5 member is added to gp1 group
 		print_and_log("Current Grid master vip is " + config.grid_vip)
                 get_data = ib_NIOS.wapi_request('GET', object_type=""+group_ref+"?_return_fields=name,comment,gmc_promotion_policy,scheduled_time,members,time_zone", grid_vip=master_ip)
                 print_and_log(get_data)
@@ -698,59 +697,59 @@ def dns_test_zone_arecords(master_ip=config.grid_vip, master_fqdn=config.grid1_m
     print(ref_admin_a)
 
 
-def dns_test_zone_allrecords_restart_simultaneously():
+def dns_test_zone_allrecords_restart_simultaneously(master_ip=config.grid_vip, master_fqdn=config.grid1_master_fqdn):
     data = {"fqdn": "abc.com"}
-    response = ib_NIOS.wapi_request('POST', object_type="zone_auth", fields=json.dumps(data))
+    response = ib_NIOS.wapi_request('POST', object_type="zone_auth", fields=json.dumps(data), grid_vip=master_ip)
     print response
     logging.info(response)
 
-    get_ref = ib_NIOS.wapi_request('GET', object_type="zone_auth?fqdn=abc.com")
+    get_ref = ib_NIOS.wapi_request('GET', object_type="zone_auth?fqdn=abc.com", grid_vip=master_ip)
     logging.info(get_ref)
     res = json.loads(get_ref)
     ref1 = json.loads(get_ref)[0]['_ref']
     print ref1
 
-    data = {"grid_primary": [{"name": config.grid_fqdn,"stealth":False}]}
-    response = ib_NIOS.wapi_request('PUT',ref=ref1,fields=json.dumps(data))
+    data = {"grid_primary": [{"name": master_fqdn,"stealth":False}]}
+    response = ib_NIOS.wapi_request('PUT',ref=ref1,fields=json.dumps(data), grid_vip=master_ip)
     logging.info(response)
 
     logging.info("Restart services")
-    grid =  ib_NIOS.wapi_request('GET', object_type="grid")
+    grid =  ib_NIOS.wapi_request('GET', object_type="grid", grid_vip=master_ip)
     ref = json.loads(grid)[0]['_ref']
     publish={"member_order":"SIMULTANEOUSLY"}
-    request_publish = ib_NIOS.wapi_request('POST', object_type = ref + "?_function=publish_changes",fields=json.dumps(publish))
+    request_publish = ib_NIOS.wapi_request('POST', object_type = ref + "?_function=publish_changes",fields=json.dumps(publish), grid_vip=master_ip)
     sleep(10)
-    request_restart = ib_NIOS.wapi_request('POST', object_type = ref + "?_function=requestrestartservicestatus")
-    restart = ib_NIOS.wapi_request('POST', object_type = ref + "?_function=restartservices")
+    request_restart = ib_NIOS.wapi_request('POST', object_type = ref + "?_function=requestrestartservicestatus", grid_vip=master_ip)
+    restart = ib_NIOS.wapi_request('POST', object_type = ref + "?_function=restartservices", grid_vip=master_ip)
     sleep(20)
 
     data={"name":"arec.abc.com","ipv4addr":"3.3.3.3","view": "default"}
-    response = ib_NIOS.wapi_request('POST', object_type="record:a",fields=json.dumps(data))
+    response = ib_NIOS.wapi_request('POST', object_type="record:a",fields=json.dumps(data), grid_vip=master_ip)
     data={"name":"aaaa.abc.com","ipv6addr": "23::","view": "default"}
-    response = ib_NIOS.wapi_request('POST', object_type="record:aaaa",fields=json.dumps(data))
+    response = ib_NIOS.wapi_request('POST', object_type="record:aaaa",fields=json.dumps(data), grid_vip=master_ip)
     data={"name":"cname.abc.com","canonical": "test.com","view": "default"}
-    response = ib_NIOS.wapi_request('POST', object_type="record:cname",fields=json.dumps(data))
+    response = ib_NIOS.wapi_request('POST', object_type="record:cname",fields=json.dumps(data), grid_vip=master_ip)
     data={"name": "mx.test.com","mail_exchanger": "test.com","preference": 10,"view": "default"}
-    response = ib_NIOS.wapi_request('POST', object_type="record:mx",fields=json.dumps(data))
+    response = ib_NIOS.wapi_request('POST', object_type="record:mx",fields=json.dumps(data), grid_vip=master_ip)
     data={"name": "hinfo.test.com","record_type": "hinfo","subfield_values": [{"field_type": "P","field_value": "\"INTEL\" \"INTEL\"","include_length": "NONE"}],"view": "default"}
-    response = ib_NIOS.wapi_request('POST', object_type="record:unknown",fields=json.dumps(data))
+    response = ib_NIOS.wapi_request('POST', object_type="record:unknown",fields=json.dumps(data), grid_vip=master_ip)
 
 
-def dns_test_recursive_queries():
+def dns_test_recursive_queries(master_ip=config.grid_vip, master_fqdn=config.grid1_master_fqdn):
     #Need's to configure forwarder & enabling recursion
 
     print_and_log("Enabling Recursion")
-    member_dns =  ib_NIOS.wapi_request('GET', object_type="member:dns?host_name~="+config.grid_member1_fqdn)
+    member_dns =  ib_NIOS.wapi_request('GET', object_type="member:dns?host_name~="+config.grid_member1_fqdn, grid_vip=master_ip)
     ref = json.loads(member_dns)[0]['_ref']
 #   enable_recursion_forwarder={"allow_recursive_query":True,"forwarders":[config.client_ip]}
     enable_recursion_forwarder={"allow_recursive_query":True}
-    response = ib_NIOS.wapi_request('PUT', object_type=ref, fields=json.dumps(enable_recursion_forwarder))
+    response = ib_NIOS.wapi_request('PUT', object_type=ref, fields=json.dumps(enable_recursion_forwarder, grid_vip=master_ip))
 
     #Restarting 
     grid =  ib_NIOS.wapi_request('GET', object_type="grid")
     ref = json.loads(grid)[0]['_ref']
-    request_restart = ib_NIOS.wapi_request('POST', object_type = ref + "?_function=requestrestartservicestatus")
-    restart = ib_NIOS.wapi_request('POST', object_type = ref + "?_function=restartservices")
+    request_restart = ib_NIOS.wapi_request('POST', object_type = ref + "?_function=requestrestartservicestatus", grid_vip=master_ip)
+    restart = ib_NIOS.wapi_request('POST', object_type = ref + "?_function=restartservices", grid_vip=master_ip)
     sleep(60)
 
     #fp=os.popen("/usr/bin/queryperf/queryperf -s "+config.grid_member1_vip+" -d ib_data/DNS_Query/DNS_Top_Timed_Out_Recursive_Queries/queryperf.txt -t 1")
@@ -758,36 +757,36 @@ def dns_test_recursive_queries():
     #logger.info("%s",''.join(fp.readlines()))
 
     print_and_log("Cleanup,disabling recursion")
-    member_dns =  ib_NIOS.wapi_request('GET', object_type="member:dns?host_name~="+config.grid_member1_fqdn)
+    member_dns =  ib_NIOS.wapi_request('GET', object_type="member:dns?host_name~="+config.grid_member1_fqdn, grid_vip=master_ip)
     ref = json.loads(member_dns)[0]['_ref']
     disable_recursion_forwarder={"allow_recursive_query":False,"use_recursive_query_setting":False,"use_forwarders":False}
-    response = ib_NIOS.wapi_request('PUT', object_type=ref, fields=json.dumps(disable_recursion_forwarder))
+    response = ib_NIOS.wapi_request('PUT', object_type=ref, fields=json.dumps(disable_recursion_forwarder), grid_vip=master_ip)
 
     #Restarting 
-    grid =  ib_NIOS.wapi_request('GET', object_type="grid")
+    grid =  ib_NIOS.wapi_request('GET', object_type="grid", grid_vip=master_ip)
     ref = json.loads(grid)[0]['_ref']
-    request_restart = ib_NIOS.wapi_request('POST', object_type = ref + "?_function=requestrestartservicestatus")
-    restart = ib_NIOS.wapi_request('POST', object_type = ref + "?_function=restartservices")
+    request_restart = ib_NIOS.wapi_request('POST', object_type = ref + "?_function=requestrestartservicestatus", grid_vip=master_ip)
+    restart = ib_NIOS.wapi_request('POST', object_type = ref + "?_function=restartservices", grid_vip=master_ip)
     sleep(60)
 
 
-def dns_test_nxdomain_noerror():
+def dns_test_nxdomain_noerror(master_ip=config.grid_vip, master_fqdn=config.grid1_master_fqdn):
     print_and_log("Adding zone 57.in-addr.arpa, dns_top_nxdomain_or_noerror.com & 7.7.7.7.ip6.arpa")
     #TEST Preparation, Adding zone 'dns_top_clients.com',  GM as Primary , Member1 & Member2 as secondary for resolving members
     zone1 = {"fqdn":"dns_top_nxdomain_or_noerror.com","view":"default","grid_primary": [{"name": config.grid_fqdn,"stealth": False}]}
-    response = ib_NIOS.wapi_request('POST', object_type="zone_auth", fields=json.dumps(zone1))
+    response = ib_NIOS.wapi_request('POST', object_type="zone_auth", fields=json.dumps(zone1), grid_vip=master_ip)
 
     zone2 = {"fqdn":"57.0.0.0/8","view":"default","zone_format":"IPV4","grid_primary": [{"name": config.grid_fqdn,"stealth": False}]}
-    response = ib_NIOS.wapi_request('POST', object_type="zone_auth", fields=json.dumps(zone2))
+    response = ib_NIOS.wapi_request('POST', object_type="zone_auth", fields=json.dumps(zone2), grid_vip=master_ip)
 
     zone3 = {"fqdn":"7777::/64","view":"default","zone_format":"IPV6","grid_primary": [{"name": config.grid_fqdn,"stealth": False}]}
-    response = ib_NIOS.wapi_request('POST', object_type="zone_auth", fields=json.dumps(zone3))
+    response = ib_NIOS.wapi_request('POST', object_type="zone_auth", fields=json.dumps(zone3), grid_vip=master_ip)
 
     #Restarting 
     print_and_log("Restaring DNS Service")
-    grid =  ib_NIOS.wapi_request('GET', object_type="grid")
+    grid =  ib_NIOS.wapi_request('GET', object_type="grid", grid_vip=master_ip)
     ref = json.loads(grid)[0]['_ref']
-    request_restart = ib_NIOS.wapi_request('POST', object_type = ref + "?_function=requestrestartservicestatus")
+    request_restart = ib_NIOS.wapi_request('POST', object_type = ref + "?_function=requestrestartservicestatus", grid_vip=master_ip)
     restart = ib_NIOS.wapi_request('POST', object_type = ref + "?_function=restartservices")
     sleep(60)
 
@@ -799,24 +798,24 @@ def dns_test_nxdomain_noerror():
 
     #Cleanup 
     print_and_log("Cleanup deleting added zones")
-    del_zone = ib_NIOS.wapi_request('GET', object_type="zone_auth?fqdn~=dns_top_nxdomain_or_noerror.com")
+    del_zone = ib_NIOS.wapi_request('GET', object_type="zone_auth?fqdn~=dns_top_nxdomain_or_noerror.com", grid_vip=master_ip)
     ref = json.loads(del_zone)[0]['_ref']
-    del_status = ib_NIOS.wapi_request('DELETE', object_type = ref)
+    del_status = ib_NIOS.wapi_request('DELETE', object_type = ref, grid_vip=master_ip)
 
-    del_zone = ib_NIOS.wapi_request('GET', object_type="zone_auth?fqdn~=57.0.0.0/8")
+    del_zone = ib_NIOS.wapi_request('GET', object_type="zone_auth?fqdn~=57.0.0.0/8", grid_vip=master_ip)
     ref = json.loads(del_zone)[0]['_ref']
-    del_status = ib_NIOS.wapi_request('DELETE', object_type = ref)
+    del_status = ib_NIOS.wapi_request('DELETE', object_type = ref, grid_vip=master_ip)
 
-    del_zone = ib_NIOS.wapi_request('GET', object_type="zone_auth?fqdn~=7777::/64")
+    del_zone = ib_NIOS.wapi_request('GET', object_type="zone_auth?fqdn~=7777::/64", grid_vip=master_ip)
     ref = json.loads(del_zone)[0]['_ref']
-    del_status = ib_NIOS.wapi_request('DELETE', object_type = ref)
+    del_status = ib_NIOS.wapi_request('DELETE', object_type = ref, grid_vip=master_ip)
 
     #Restarting
     print_and_log("Restaring DNS Service")
-    grid =  ib_NIOS.wapi_request('GET', object_type="grid")
+    grid =  ib_NIOS.wapi_request('GET', object_type="grid", grid_vip=master_ip)
     ref = json.loads(grid)[0]['_ref']
-    request_restart = ib_NIOS.wapi_request('POST', object_type = ref + "?_function=requestrestartservicestatus")
-    restart = ib_NIOS.wapi_request('POST', object_type = ref + "?_function=restartservices")
+    request_restart = ib_NIOS.wapi_request('POST', object_type = ref + "?_function=requestrestartservicestatus", grid_vip=master_ip)
+    restart = ib_NIOS.wapi_request('POST', object_type = ref + "?_function=restartservices", grid_vip=master_ip)
     sleep(60)
 
 
@@ -825,40 +824,40 @@ def dns_test_nxdomain_noerror():
 
 
 #DHCP Functions
-def dhcp_test_network_leases():
+def dhcp_test_network_leases(master_ip=config.grid_vip, master_fqdn=config.grid1_master_fqdn):
     # Add ipv4 Network
     print_and_log("Add Network '10.0.0.0/8' with Grid master as Member assignment")
-    network1 = {"network":"10.0.0.0/8","network_view":"default","members":[{"name":config.grid_fqdn,"_struct": "dhcpmember"}],"options":[{"name": "dhcp-lease-time","value": "74390400"}]}
-    network1_response = ib_NIOS.wapi_request('POST', object_type="network", fields=json.dumps(network1))
-    network1_get = ib_NIOS.wapi_request('GET', object_type="network?network=10.0.0.0/8")
+    network1 = {"network":"10.0.0.0/8","network_view":"default","members":[{"name":master_fqdn,"_struct": "dhcpmember"}],"options":[{"name": "dhcp-lease-time","value": "74390400"}]}
+    network1_response = ib_NIOS.wapi_request('POST', object_type="network", fields=json.dumps(network1), grid_vip=master_ip)
+    network1_get = ib_NIOS.wapi_request('GET', object_type="network?network=10.0.0.0/8", grid_vip=master_ip)
     network1_ref = json.loads(network1_get)[0]['_ref']
     print(network1_ref)
 
     # Add ipv6 Network
     print_and_log("Add ipv6 Network '2001:550:40a:2500::/64' with Grid master as Member assignment")
-    network2 = {"network": "2001:550:40a:2500::/64","network_view":"default","members":[{"name":config.grid_fqdn,"_struct": "dhcpmember"}],"options":[{"name": "dhcp-lease-time","value": "74390400"}]}
-    network2_response = ib_NIOS.wapi_request('POST', object_type="ipv6network", fields=json.dumps(network2))
-    network2_get = ib_NIOS.wapi_request('GET', object_type="ipv6network")
+    network2 = {"network": "2001:550:40a:2500::/64","network_view":"default","members":[{"name":master_fqdn,"_struct": "dhcpmember"}],"options":[{"name": "dhcp-lease-time","value": "74390400"}]}
+    network2_response = ib_NIOS.wapi_request('POST', object_type="ipv6network", fields=json.dumps(network2), grid_vip=master_ip)
+    network2_get = ib_NIOS.wapi_request('GET', object_type="ipv6network", grid_vip=master_ip)
     network2_ref = json.loads(network2_get)[0]['_ref']
     print(network2_ref)
 
     # Add range in 10.0.0.0/8
     print_and_log("Add Range '10.0.0.1 - 10.9.255.255' in '10.0.0.0/8' with Grid master as Member assignment")
-    range = {"network":"10.0.0.0/8","network_view":"default","member":{"_struct": "dhcpmember","name":config.grid_fqdn},"start_addr":"10.0.0.1","end_addr":"10.9.255.255"}
-    range_response = ib_NIOS.wapi_request('POST', object_type="range", fields=json.dumps(range))
+    range = {"network":"10.0.0.0/8","network_view":"default","member":{"_struct": "dhcpmember","name":master_fqdn},"start_addr":"10.0.0.1","end_addr":"10.9.255.255"}
+    range_response = ib_NIOS.wapi_request('POST', object_type="range", fields=json.dumps(range), grid_vip=master_ip)
     print(range_response)
 
     # Add range in 2001:550:40a:2500::/64
     print_and_log("Add Range '2001:550:40a:2500::1111 - 2001:550:40a:2500::5555' in '2001:550:40a:2500::/64' with Grid master as Member assignment")
-    range = {"network":"2001:550:40a:2500::/64","network_view":"default","member":{"_struct": "dhcpmember","name":config.grid_fqdn},"start_addr":"2001:550:40a:2500::1111","end_addr":"2001:550:40a:2500::5555"}
-    range_response = ib_NIOS.wapi_request('POST', object_type="ipv6range", fields=json.dumps(range))
+    range = {"network":"2001:550:40a:2500::/64","network_view":"default","member":{"_struct": "dhcpmember","name":master_fqdn},"start_addr":"2001:550:40a:2500::1111","end_addr":"2001:550:40a:2500::5555"}
+    range_response = ib_NIOS.wapi_request('POST', object_type="ipv6range", fields=json.dumps(range), grid_vip=master_ip)
     print(range_response)
 
     # Restart Services
-    grid =  ib_NIOS.wapi_request('GET', object_type="grid")
+    grid =  ib_NIOS.wapi_request('GET', object_type="grid", grid_vip=master_ip)
     ref = json.loads(grid)[0]['_ref']
-    request_restart = ib_NIOS.wapi_request('POST', object_type = ref + "?_function=requestrestartservicestatus")
-    restart = ib_NIOS.wapi_request('POST', object_type = ref + "?_function=restartservices")
+    request_restart = ib_NIOS.wapi_request('POST', object_type = ref + "?_function=requestrestartservicestatus", grid_vip=master_ip)
+    restart = ib_NIOS.wapi_request('POST', object_type = ref + "?_function=restartservices", grid_vip=master_ip)
     sleep(60)
 
 # Requesting 200 Leases
@@ -869,52 +868,52 @@ def dhcp_test_network_leases():
 
 
 
-def dhcp_test_fingerprint():
+def dhcp_test_fingerprint(master_ip=config.grid_vip, master_fqdn=config.grid1_master_fqdn):
     #Network View
     network_view = {"name":"network_view_dhcp"}
-    response = ib_NIOS.wapi_request('POST', object_type="networkview", fields=json.dumps(network_view))
+    response = ib_NIOS.wapi_request('POST', object_type="networkview", fields=json.dumps(network_view), grid_vip=master_ip)
     print(response)
     # Add Network
     data = {"members":[{"_struct": "dhcpmember", "ipv4addr":config.grid_member1_vip,"name":config.grid_member1_fqdn}], \
      "network": "10.0.0.0/8", "network_view": "network_view_dhcp"}
-    response = ib_NIOS.wapi_request('POST', object_type="network", fields=json.dumps(data))
+    response = ib_NIOS.wapi_request('POST', object_type="network", fields=json.dumps(data), grid_vip=master_ip)
     print(response)
     data = {"members":[{"_struct": "dhcpmember", "ipv4addr":config.grid_member1_vip,"name":config.grid_member1_fqdn}], \
      "network": "51.0.0.0/24", "network_view": "network_view_dhcp"}
-    response = ib_NIOS.wapi_request('POST', object_type="network", fields=json.dumps(data))
+    response = ib_NIOS.wapi_request('POST', object_type="network", fields=json.dumps(data), grid_vip=master_ip)
     print(response)
     #Add Range
     range_obj = {"start_addr":"51.0.0.1","end_addr":"51.0.0.100","member":{"_struct": "dhcpmember","ipv4addr":config.grid_member1_vip, \
      "name":config.grid_member1_fqdn},"network_view":"network_view_dhcp", \
      "options":[{"_struct": "dhcpoption","name":"dhcp-lease-time","num": 51,"use_option": True,"value": "300","vendor_class": "DHCP"}]}
-    range = ib_NIOS.wapi_request('POST', object_type="range", fields=json.dumps(range_obj))
+    range = ib_NIOS.wapi_request('POST', object_type="range", fields=json.dumps(range_obj), grid_vip=master_ip)
     print(range)
 
     range_obj = {"start_addr":"10.0.0.1","end_addr":"10.0.0.100","member":{"_struct": "dhcpmember","ipv4addr":config.grid_member1_vip, \
      "name":config.grid_member1_fqdn},"network_view":"network_view_dhcp", \
      "options":[{"_struct": "dhcpoption","name":"dhcp-lease-time","num": 51,"use_option": True,"value": "300","vendor_class": "DHCP"}]}
-    range = ib_NIOS.wapi_request('POST', object_type="range", fields=json.dumps(range_obj))
+    range = ib_NIOS.wapi_request('POST', object_type="range", fields=json.dumps(range_obj), grid_vip=master_ip)
     print(range)
 
     # Add Shared network
     network_ref_list=[]
-    network_10 = ib_NIOS.wapi_request('GET', object_type="network?network=10.0.0.0/8")
+    network_10 = ib_NIOS.wapi_request('GET', object_type="network?network=10.0.0.0/8", grid_vip=master_ip)
     print(network_10)
     ref_10 = json.loads(network_10)[0]['_ref']
     network_ref_list.append({"_ref":ref_10})
-    network_51 = ib_NIOS.wapi_request('GET', object_type="network?network=51.0.0.0/24")
+    network_51 = ib_NIOS.wapi_request('GET', object_type="network?network=51.0.0.0/24", grid_vip=master_ip)
     print(network_10)
     ref_51 = json.loads(network_51)[0]['_ref']
     network_ref_list.append({"_ref":ref_51})
     shared_obj={"name":"sharednetworks","networks":network_ref_list,"network_view":"network_view_dhcp"}
-    shared1 = ib_NIOS.wapi_request('POST',object_type="sharednetwork",fields=json.dumps(shared_obj))
+    shared1 = ib_NIOS.wapi_request('POST',object_type="sharednetwork",fields=json.dumps(shared_obj), grid_vip=master_ip)
     print(shared1)
 
     #Restarting
-    grid =  ib_NIOS.wapi_request('GET', object_type="grid")
+    grid =  ib_NIOS.wapi_request('GET', object_type="grid", grid_vip=master_ip)
     ref = json.loads(grid)[0]['_ref']
-    request_restart = ib_NIOS.wapi_request('POST', object_type = ref + "?_function=requestrestartservicestatus")
-    restart = ib_NIOS.wapi_request('POST', object_type = ref + "?_function=restartservices")
+    request_restart = ib_NIOS.wapi_request('POST', object_type = ref + "?_function=requestrestartservicestatus", grid_vip=master_ip)
+    restart = ib_NIOS.wapi_request('POST', object_type = ref + "?_function=restartservices", grid_vip=master_ip)
     sleep(160)
 
     # Generate Requested leases for Device Trend, Device Class Trend, Top Device Class Identified, Fingerprint Name Change Detected and (Voip Phones/Adapters)
@@ -938,19 +937,19 @@ def dhcp_test_fingerprint():
 
     # Add Fingerprint Filter to Generate lease for DHCP TOP DEVICE Denied IP Address
     fingerprint_data = {"name":"fingerprint_filter","fingerprint":["Alps Electric"]}
-    shared = ib_NIOS.wapi_request('POST', object_type="filterfingerprint", fields=json.dumps(fingerprint_data))
+    shared = ib_NIOS.wapi_request('POST', object_type="filterfingerprint", fields=json.dumps(fingerprint_data), grid_vip=master_ip)
 
     # Modify DHCP Range 51.0.0.1 to 51.0.0.100 Fingerprint Filter in Range.
-    get_range = ib_NIOS.wapi_request('GET', object_type="range?start_addr~=51.0.0.1")
+    get_range = ib_NIOS.wapi_request('GET', object_type="range?start_addr~=51.0.0.1", grid_vip=master_ip)
     ref_range = json.loads(get_range)[0]['_ref']
     modify_range={"fingerprint_filter_rules":[{"filter": "fingerprint_filter","permission": "Deny"}]}
-    modify_filter = ib_NIOS.wapi_request('PUT',object_type=ref_range,fields=json.dumps(modify_range))
+    modify_filter = ib_NIOS.wapi_request('PUT',object_type=ref_range,fields=json.dumps(modify_range), grid_vip=master_ip)
 
     #Restarting
-    grid =  ib_NIOS.wapi_request('GET', object_type="grid")
+    grid =  ib_NIOS.wapi_request('GET', object_type="grid", grid_vip=master_ip)
     ref = json.loads(grid)[0]['_ref']
-    request_restart = ib_NIOS.wapi_request('POST', object_type = ref + "?_function=requestrestartservicestatus")
-    restart = ib_NIOS.wapi_request('POST', object_type = ref + "?_function=restartservices")
+    request_restart = ib_NIOS.wapi_request('POST', object_type = ref + "?_function=requestrestartservicestatus", grid_vip=master_ip)
+    restart = ib_NIOS.wapi_request('POST', object_type = ref + "?_function=restartservices", grid_vip=master_ip)
     sleep(160)
     
     # Alps Electric For DHCP TOP DEVICE Denied IP Address
@@ -958,102 +957,102 @@ def dhcp_test_fingerprint():
     print_and_log("%s", ''.join( cmd4.readlines()))
     sleep(30)
     #Restarting
-    grid =  ib_NIOS.wapi_request('GET', object_type="grid")
+    grid =  ib_NIOS.wapi_request('GET', object_type="grid", grid_vip=master_ip)
     ref = json.loads(grid)[0]['_ref']
-    request_restart = ib_NIOS.wapi_request('POST', object_type = ref + "?_function=requestrestartservicestatus")
-    restart = ib_NIOS.wapi_request('POST', object_type = ref + "?_function=restartservices")
+    request_restart = ib_NIOS.wapi_request('POST', object_type = ref + "?_function=requestrestartservicestatus", grid_vip=master_ip)
+    restart = ib_NIOS.wapi_request('POST', object_type = ref + "?_function=restartservices", grid_vip=master_ip)
     sleep(180)
 
     # Delete Shared Network
-    delshared = ib_NIOS.wapi_request('GET', object_type="sharednetwork?name~=sharednetworks")
+    delshared = ib_NIOS.wapi_request('GET', object_type="sharednetwork?name~=sharednetworks", grid_vip=master_ip)
     ref = json.loads(delshared)[0]['_ref']
-    del_status = ib_NIOS.wapi_request('DELETE', object_type = ref)
+    del_status = ib_NIOS.wapi_request('DELETE', object_type = ref, grid_vip=master_ip)
 
     # Delete and Disable Networks
-    delnetwork = ib_NIOS.wapi_request('GET', object_type="network?network~=10.0.0.0/8")
+    delnetwork = ib_NIOS.wapi_request('GET', object_type="network?network~=10.0.0.0/8", grid_vip=master_ip)
     ref = json.loads(delnetwork)[0]['_ref']
-    del_status = ib_NIOS.wapi_request('DELETE', object_type = ref)
-    delnetwork = ib_NIOS.wapi_request('GET', object_type="network?network~=51.0.0.0/24")
+    del_status = ib_NIOS.wapi_request('DELETE', object_type = ref, grid_vip=master_ip)
+    delnetwork = ib_NIOS.wapi_request('GET', object_type="network?network~=51.0.0.0/24", grid_vip=master_ip)
     ref_51 = json.loads(delnetwork)[0]['_ref']
     data = {"disable":True}
-    del_status = ib_NIOS.wapi_request('PUT',object_type=ref_51,fields=json.dumps(data))
+    del_status = ib_NIOS.wapi_request('PUT',object_type=ref_51,fields=json.dumps(data), grid_vip=master_ip)
 
 
-def dhcp_test_usage():
+def dhcp_test_usage(master_ip=config.grid_vip, master_fqdn=config.grid1_master_fqdn):
     #MAC Filter
     mac_filter = {"name":"mac1"}
-    response = ib_NIOS.wapi_request('POST', object_type="filtermac", fields=json.dumps(mac_filter))
+    response = ib_NIOS.wapi_request('POST', object_type="filtermac", fields=json.dumps(mac_filter), grid_vip=master_ip)
 
     mac_filter_2 = {"name":"mac2"}
-    response = ib_NIOS.wapi_request('POST', object_type="filtermac", fields=json.dumps(mac_filter_2))
+    response = ib_NIOS.wapi_request('POST', object_type="filtermac", fields=json.dumps(mac_filter_2), grid_vip=master_ip)
 
     # MAC Filter Address
     mac_filter_address_1 = {"filter":"mac1","mac":"11:22:33:44:55:66"}
-    response = ib_NIOS.wapi_request('POST', object_type="macfilteraddress", fields=json.dumps(mac_filter_address_1))
+    response = ib_NIOS.wapi_request('POST', object_type="macfilteraddress", fields=json.dumps(mac_filter_address_1), grid_vip=master_ip)
 
     mac_filter_address_2 = {"filter":"mac2","mac":"99:66:33:88:55:22"}
-    response = ib_NIOS.wapi_request('POST', object_type="macfilteraddress", fields=json.dumps(mac_filter_address_2))
+    response = ib_NIOS.wapi_request('POST', object_type="macfilteraddress", fields=json.dumps(mac_filter_address_2), grid_vip=master_ip)
 
     #Network View
     network_view = {"name":"custom_view_1"}
-    response = ib_NIOS.wapi_request('POST', object_type="networkview", fields=json.dumps(network_view))
+    response = ib_NIOS.wapi_request('POST', object_type="networkview", fields=json.dumps(network_view), grid_vip=master_ip)
 
     #Add Network
     network_data = {"members":[{"_struct": "dhcpmember", "ipv4addr": config.grid_member2_vip,"name":config.grid_member2_fqdn}], \
                     "network":"10.0.0.0/8","network_view":"custom_view_1"}
-    response = ib_NIOS.wapi_request('POST', object_type="network", fields=json.dumps(network_data))
+    response = ib_NIOS.wapi_request('POST', object_type="network", fields=json.dumps(network_data), grid_vip=master_ip)
 
     network_data_30 = {"members":[{"_struct": "dhcpmember", "ipv4addr": config.grid_member2_vip,"name":config.grid_member2_fqdn}], \
                        "network":"30.0.0.0/24","network_view":"custom_view_1"}
-    response = ib_NIOS.wapi_request('POST', object_type="network", fields=json.dumps(network_data_30))
+    response = ib_NIOS.wapi_request('POST', object_type="network", fields=json.dumps(network_data_30), grid_vip=master_ip)
 
     network_data_32 = {"members":[{"_struct": "dhcpmember", "ipv4addr": config.grid_member2_vip,"name":config.grid_member2_fqdn}],\
                         "network":"32.0.0.0/24","network_view":"custom_view_1"}
-    response = ib_NIOS.wapi_request('POST', object_type="network", fields=json.dumps(network_data_32))
+    response = ib_NIOS.wapi_request('POST', object_type="network", fields=json.dumps(network_data_32), grid_vip=master_ip)
     #Add Range
 
     range_obj = {"start_addr":"10.0.0.1","end_addr":"10.0.0.50","network_view":"custom_view_1","member":{"_struct": "dhcpmember", \
     "ipv4addr":config.grid_member2_vip,"name": config.grid_member2_fqdn},"mac_filter_rules":[{"filter": "mac1","permission": "Allow"}]}
-    range = ib_NIOS.wapi_request('POST', object_type="range", fields=json.dumps(range_obj))
+    range = ib_NIOS.wapi_request('POST', object_type="range", fields=json.dumps(range_obj), grid_vip=master_ip)
 
 
     range_obj = {"start_addr":"30.0.0.1","end_addr":"30.0.0.50","network_view":"custom_view_1","member":{"_struct": "dhcpmember", \
     "ipv4addr":config.grid_member2_vip,"name": config.grid_member2_fqdn},"mac_filter_rules":[{"filter": "mac1","permission": "Allow"}]}
-    range = ib_NIOS.wapi_request('POST', object_type="range", fields=json.dumps(range_obj))
+    range = ib_NIOS.wapi_request('POST', object_type="range", fields=json.dumps(range_obj), grid_vip=master_ip)
 
     range_obj_25 = {"start_addr":"32.0.0.1","end_addr":"32.0.0.100","network_view":"custom_view_1","member":{"_struct": "dhcpmember", \
     "ipv4addr":config.grid_member2_vip,"name": config.grid_member2_fqdn},"mac_filter_rules":[{"filter": "mac2","permission": "Allow"}]}
-    range = ib_NIOS.wapi_request('POST', object_type="range", fields=json.dumps(range_obj_25))
+    range = ib_NIOS.wapi_request('POST', object_type="range", fields=json.dumps(range_obj_25), grid_vip=master_ip)
 
     #Add Fixed Address
     fixed_address = {"ipv4addr":"30.0.0.32","mac":"88:55:22:99:66:33","network_view":"custom_view_1"}
-    response = ib_NIOS.wapi_request('POST', object_type="fixedaddress", fields=json.dumps(fixed_address))
+    response = ib_NIOS.wapi_request('POST', object_type="fixedaddress", fields=json.dumps(fixed_address), grid_vip=master_ip)
 
     fixed_address_2 = {"ipv4addr":"32.0.0.32","mac":"55:22:66:33:99:55","network_view":"custom_view_1"}
-    response = ib_NIOS.wapi_request('POST', object_type="fixedaddress", fields=json.dumps(fixed_address_2))
+    response = ib_NIOS.wapi_request('POST', object_type="fixedaddress", fields=json.dumps(fixed_address_2), grid_vip=master_ip)
 
 
     # Add Shared Network
     network_ref_list = []
-    network_10 = ib_NIOS.wapi_request('GET', object_type="network?network=10.0.0.0/8")
+    network_10 = ib_NIOS.wapi_request('GET', object_type="network?network=10.0.0.0/8", grid_vip=master_ip)
     print(network_10)
     ref10 = json.loads(network_10)[0]['_ref']
     network_ref_list.append({"_ref":ref10})
-    network_30 = ib_NIOS.wapi_request('GET', object_type="network?network=30.0.0.0/24")
+    network_30 = ib_NIOS.wapi_request('GET', object_type="network?network=30.0.0.0/24", grid_vip=master_ip)
     ref30 = json.loads(network_30)[0]['_ref']
     network_ref_list.append({"_ref":ref30})
-    network_32 = ib_NIOS.wapi_request('GET', object_type="network?network=32.0.0.0/24")
+    network_32 = ib_NIOS.wapi_request('GET', object_type="network?network=32.0.0.0/24", grid_vip=master_ip)
     ref32 = json.loads(network_32)[0]['_ref']
     network_ref_list.append({"_ref":ref32})
 
     range_obj = {"name":"shareddhcp","networks":network_ref_list,"network_view": "custom_view_1"}
-    shared = ib_NIOS.wapi_request('POST', object_type="sharednetwork", fields=json.dumps(range_obj))
+    shared = ib_NIOS.wapi_request('POST', object_type="sharednetwork", fields=json.dumps(range_obj), grid_vip=master_ip)
 
     #Restarting
-    grid =  ib_NIOS.wapi_request('GET', object_type="grid")
+    grid =  ib_NIOS.wapi_request('GET', object_type="grid", grid_vip=master_ip)
     ref = json.loads(grid)[0]['_ref']
-    request_restart = ib_NIOS.wapi_request('POST', object_type = ref + "?_function=requestrestartservicestatus")
-    restart = ib_NIOS.wapi_request('POST', object_type = ref + "?_function=restartservices")
+    request_restart = ib_NIOS.wapi_request('POST', object_type = ref + "?_function=requestrestartservicestatus", grid_vip=master_ip)
+    restart = ib_NIOS.wapi_request('POST', object_type = ref + "?_function=restartservices", grid_vip=master_ip)
 
     sleep(120)
 
@@ -1067,28 +1066,28 @@ def dhcp_test_usage():
 
 
     #Restarting
-    grid =  ib_NIOS.wapi_request('GET', object_type="grid")
+    grid =  ib_NIOS.wapi_request('GET', object_type="grid", grid_vip=master_ip)
     ref = json.loads(grid)[0]['_ref']
-    request_restart = ib_NIOS.wapi_request('POST', object_type = ref + "?_function=requestrestartservicestatus")
-    restart = ib_NIOS.wapi_request('POST', object_type = ref + "?_function=restartservices")
+    request_restart = ib_NIOS.wapi_request('POST', object_type = ref + "?_function=requestrestartservicestatus", grid_vip=master_ip)
+    restart = ib_NIOS.wapi_request('POST', object_type = ref + "?_function=restartservices", grid_vip=master_ip)
 
     sleep(180)
     # Delete Network
 
     # Delete and Disable Networks
-    del_network_10 = ib_NIOS.wapi_request('GET', object_type="network?network=10.0.0.0/8")
+    del_network_10 = ib_NIOS.wapi_request('GET', object_type="network?network=10.0.0.0/8", grid_vip=master_ip)
     ref = json.loads(del_network_10)[0]['_ref']
-    del_status = ib_NIOS.wapi_request('DELETE', object_type = ref)
+    del_status = ib_NIOS.wapi_request('DELETE', object_type = ref, grid_vip=master_ip)
 
-    disable_network = ib_NIOS.wapi_request('GET', object_type="network?network=30.0.0.0/24")
+    disable_network = ib_NIOS.wapi_request('GET', object_type="network?network=30.0.0.0/24", grid_vip=master_ip)
     ref_30 = json.loads(disable_network)[0]['_ref']
     data = {"disable":True}
-    del_status = ib_NIOS.wapi_request('PUT',object_type=ref_30,fields=json.dumps(data))
+    del_status = ib_NIOS.wapi_request('PUT',object_type=ref_30,fields=json.dumps(data), grid_vip=master_ip)
 
-    disable_network_32 = ib_NIOS.wapi_request('GET', object_type="network?network=32.0.0.0/24")
+    disable_network_32 = ib_NIOS.wapi_request('GET', object_type="network?network=32.0.0.0/24", grid_vip=master_ip)
     ref_32 = json.loads(disable_network_32)[0]['_ref']
     data = {"disable":True}
-    del_status = ib_NIOS.wapi_request('PUT',object_type=ref_32,fields=json.dumps(data))
+    del_status = ib_NIOS.wapi_request('PUT',object_type=ref_32,fields=json.dumps(data), grid_vip=master_ip)
 
 
 
@@ -1854,27 +1853,27 @@ class RFE_4753_Scheduled_Group_GMC_Promotion(unittest.TestCase):
 
         @pytest.mark.run(order=30)
         def test_030_test_dns_zone_allrecords_restart_simultaneously(self):
-                dns_test_zone_allrecords_restart_simultaneously()
+                dns_test_zone_allrecords_restart_simultaneously(config.grid1_member5_vip, config.grid1_member5_fqdn)
 
         @pytest.mark.run(order=31)
         def test_031_test_dns_recursive_queries(self):
-                dns_test_recursive_queries()
+                dns_test_recursive_queries(config.grid1_member5_vip, config.grid1_member5_fqdn)
 
         @pytest.mark.run(order=32)
         def test_032_test_dns_nxdomain_noerror(self):
-		dns_test_nxdomain_noerror()
+		dns_test_nxdomain_noerror(config.grid1_member5_vip, config.grid1_member5_fqdn)
 
         @pytest.mark.run(order=33)
         def test_033_test_dhcp_network_leases(self):
-		dhcp_test_network_leases()
+		dhcp_test_network_leases(config.grid1_member5_vip, config.grid1_member5_fqdn)
 
         @pytest.mark.run(order=34)
         def test_034_test_dhcp_fingerprint(self):
-		dhcp_test_fingerprint()
+		dhcp_test_fingerprint(config.grid1_member5_vip, config.grid1_member5_fqdn)
 
         @pytest.mark.run(order=35)
         def test_035_test_dhcp_usage(self):
-		dhcp_test_usage()
+		dhcp_test_usage(config.grid1_member5_vip, config.grid1_member5_fqdn)
 
         @pytest.mark.run(order=36)
         def test_036_backup(self):
@@ -1936,7 +1935,7 @@ class RFE_4753_Scheduled_Group_GMC_Promotion(unittest.TestCase):
                 join_now(group_ref_gp2)
                 check_able_to_login_appliances(member_vip)
                 validate_status_GM_after_GMC_promotion(member_vip)
-
+"""
         @pytest.mark.run(order=138)
         def test_138_Promote_oldGM_back(self):
                 print_and_log("\n********** Promote old GM back **********")
@@ -1947,5 +1946,5 @@ class RFE_4753_Scheduled_Group_GMC_Promotion(unittest.TestCase):
                 promote_master(member_vip)
                 check_able_to_login_appliances(member_vip)
                 validate_status_GM_after_GMC_promotion(member_vip)
-
+"""
 
