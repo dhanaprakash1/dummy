@@ -938,7 +938,7 @@ def dhcp_test_fingerprint(master_ip=config.grid_vip, master_fqdn=config.grid1_ma
     sleep(10)
     # Switches
     cmd1=os.popen("sudo /import/tools/qa/tools/dras_opt55/dras -i "+config.grid1_member3_vip+" -n 10 -w -D -O 55:0103060f1B")
-    print_and_log("%s", ''.join( cmd1.readlines()))
+    #print_and_log("%s", ''.join( cmd1.readlines()))
     #sleep(30)
     # Apple Airport  ( Device Fingerprint Name Change Detected Report )
     cmd2=os.popen("sudo /import/tools/qa/tools/dras_opt55/dras -i "+config.grid1_member3_vip+" -n 1 -w -D -O 55:1c03060f -a  aa:11:bb:22:cc:33")
@@ -1071,11 +1071,11 @@ def dhcp_test_usage(master_ip=config.grid_vip, master_fqdn=config.grid1_master_f
     sleep(120)
 
     cmd9=os.popen("sudo /import/tools/qa/tools/dras/dras -i "+config.grid1_member2_vip+" -n 1 -a 11:22:33:44:55:66")
-    print_and_log("%s", ''.join( cmd9.readlines()))
+    #print_and_log("%s", ''.join( cmd9.readlines()))
     sleep(30)
 
     cmd10=os.popen("sudo /import/tools/qa/tools/dras/dras -i "+config.grid1_member2_vip+" -n 1 -x l=32.0.0.0 -a 99:66:33:88:55:22")
-    print_and_log("%s", ''.join( cmd10.readlines()))
+    #print_and_log("%s", ''.join( cmd10.readlines()))
     sleep(10)
 
 
