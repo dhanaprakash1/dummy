@@ -221,6 +221,21 @@ def Update_SCHEDULED_TIME_and_GMC_PROMOTION_POLICY_to_GMC_Group(group_ref, sched
                 return count
                 print_and_log("*********** Function Execution Completed **********")
 
+
+def Get_Count_of_members_in_GMCGroup(group_ref, master_ip=config.grid_vip):
+                # Validate member is added to gp1 group
+                get_data = ib_NIOS.wapi_request('GET', object_type=""+group_ref+"?_return_fields=name,comment,gmc_promotion_policy,scheduled_time,members,time_zone", grid_vip=master_ip)
+                print_and_log(get_data)
+                res = json.loads(get_data)
+                print_and_log(res)
+                count = len(res["members"])
+                #ToDo: Validate list of members
+                print_and_log("Number of groups : " + str(count))
+                #assert count == 1
+                return count
+                print_and_log("*********** Function Execution Completed **********")
+
+
 def Get_List_of_members_in_GMCGroup(group_ref):
                 # Validate member is added to gp1 group
                 get_data = ib_NIOS.wapi_request('GET', object_type=""+group_ref+"?_return_fields=name,comment,gmc_promotion_policy,scheduled_time,members,time_zone")
@@ -861,10 +876,10 @@ def dhcp_test_network_leases(master_ip=config.grid_vip, master_fqdn=config.grid1
     sleep(60)
 
 # Requesting 200 Leases
-    cmd1 = os.system("sudo /import/tools/qa/tools/dras/dras  -n 1000 -i "+config.grid_vip)
+    cmd1 = os.system("sudo /import/tools/qa/tools/dras/dras  -n 10 -i "+master_ip)
     print(cmd1)
-    cmd2 = os.system("sudo /import/tools/qa/tools/dras6/dras6  -n 1000 -i "+config.grid_ipv6+" -A")
-    print(cmd2)
+    #cmd2 = os.system("sudo /import/tools/qa/tools/dras6/dras6  -n 10 -i "+config.grid_ipv6+" -A")
+    #print(cmd2)
 
 
 
@@ -917,23 +932,22 @@ def dhcp_test_fingerprint(master_ip=config.grid_vip, master_fqdn=config.grid1_ma
     sleep(160)
 
     # Generate Requested leases for Device Trend, Device Class Trend, Top Device Class Identified, Fingerprint Name Change Detected and (Voip Phones/Adapters)
-    #cmd=os.popen("sudo /import/tools/qa/tools/dras_opt55/dras -i "+config.grid_member1_vip+" -n 10 -w -D -O 55:0103060c0f2a424378")
     cmd=os.popen("sudo /import/tools/qa/tools/dras_opt55/dras -i "+config.grid_member1_vip+" -n 10 -w -D -O 55:0103060c0f2a424378")
-    fp=os.popen("sudo /import/tools/qa/tools/dras/dras -i "+config.grid_vip+" -n 20 -x l=20.0.0.0")
+    fp=os.popen("sudo /import/tools/qa/tools/dras/dras -i "+master_ip+" -n 20 -x l=20.0.0.0")
     print_and_log("%s", ''.join( cmd.readlines()))
-    #sleep(10)
+    sleep(10)
     # Switches
     cmd1=os.popen("sudo /import/tools/qa/tools/dras_opt55/dras -i "+config.grid_member1_vip+" -n 10 -w -D -O 55:0103060f1B")
     print_and_log("%s", ''.join( cmd1.readlines()))
-    sleep(30)
+    #sleep(30)
     # Apple Airport  ( Device Fingerprint Name Change Detected Report )
     cmd2=os.popen("sudo /import/tools/qa/tools/dras_opt55/dras -i "+config.grid_member1_vip+" -n 1 -w -D -O 55:1c03060f -a  aa:11:bb:22:cc:33")
     print_and_log("%s", ''.join( cmd2.readlines()))
-    sleep(180)
+    #sleep(180)
     # AP Meraki
-    #cmd3=os.popen("sudo /import/tools/qa/tools/dras_opt55/dras -i "+config.grid_member1_vip+" -n 1 -w -D -O 55:0103060c0f1a1c28292a -a aa:11:bb:22:cc:33")
+    cmd3=os.popen("sudo /import/tools/qa/tools/dras_opt55/dras -i "+config.grid_member1_vip+" -n 1 -w -D -O 55:0103060c0f1a1c28292a -a aa:11:bb:22:cc:33")
     cmd3=os.popen("sudo /import/tools/qa/tools/dras_opt55/dras -i "+config.grid_member1_vip+" -n 1 -w -D -O  55:0103060f0c13 -a aa:11:bb:22:cc:33")
-    print_and_log("%s", ''.join( cmd3.readlines()))
+    #print_and_log("%s", ''.join( cmd3.readlines()))
 
     # Add Fingerprint Filter to Generate lease for DHCP TOP DEVICE Denied IP Address
     fingerprint_data = {"name":"fingerprint_filter","fingerprint":["Alps Electric"]}
@@ -1288,8 +1302,8 @@ class RFE_4753_Scheduled_Group_GMC_Promotion(unittest.TestCase):
 		assert expected_member_list[1] == list_members[1]["member"]
                 print_and_log("*********** Test Case Execution Completed **********")
 
-        @pytest.mark.run(order=110)
-        def test_110_Validate_Changing_order_of_Members_to_GMC_Group(self):
+        @pytest.mark.run(order=11)
+        def test_011_Validate_Changing_order_of_Members_to_GMC_Group(self):
                 print_and_log("\n********** Validate Changing Order of Members to GMC Group **********")
                 data =  {"members":[{"member": config.grid1_member2_fqdn}, {"member": config.grid1_member1_fqdn}]}
                 #data = {"members":[{"member":"vm-sa1.infoblox.com"}]}
@@ -1324,8 +1338,8 @@ class RFE_4753_Scheduled_Group_GMC_Promotion(unittest.TestCase):
                 assert expected_member_list[1] == list_members[1]["member"]
                 print_and_log("*********** Test Case Execution Completed **********")
 
-        @pytest.mark.run(order=111)
-        def test_111_Validate_Changing_Policy_does_not_change_order_of_Members_to_GMC_Group(self):
+        @pytest.mark.run(order=12)
+        def test_012_Validate_Changing_Policy_does_not_change_order_of_Members_to_GMC_Group(self):
                 print_and_log("\n********** Validate Changing Policy does not change Order of Members to GMC Group **********")
                 data =  {"gmc_promotion_policy": "SEQUENTIALLY"}
                 #data = {"members":[{"member":"vm-sa1.infoblox.com"}]}
@@ -1385,8 +1399,8 @@ class RFE_4753_Scheduled_Group_GMC_Promotion(unittest.TestCase):
                 #ToDo: Validate member is NOT moved out of default group as it is moved to new group
                 print_and_log("*********** Test Case Execution Completed **********")
 
-        @pytest.mark.run(order=12)
-        def test_012_Validate_Updating_SCHEDULED_TIME_and_GMC_PROMOTION_POLICY_to_GMC_Group(self):
+        @pytest.mark.run(order=13)
+        def test_013_Validate_Updating_SCHEDULED_TIME_and_GMC_PROMOTION_POLICY_to_GMC_Group(self):
                 print_and_log("\n********** Validate Updation of Scheduled Time and GMC Promotion Policy to GMC Group **********")
                 #get scheduled time                
 		current_epoch_time = get_current_epoch_time()
@@ -1412,8 +1426,8 @@ class RFE_4753_Scheduled_Group_GMC_Promotion(unittest.TestCase):
 		assert scheduled_time == data["scheduled_time"]
                 print_and_log("*********** Test Case Execution Completed **********")
 
-        @pytest.mark.run(order=113)
-        def test_113_Validate_GMC_PROMOTION_POLICY_of_Default_GMC_Group(self):
+        @pytest.mark.run(order=14)
+        def test_014_Validate_GMC_PROMOTION_POLICY_of_Default_GMC_Group(self):
                 # Validate gmcpromotion and Scheduled Time in Default Group [EXPECTED to FAIL as we have a bug]
                 get_data = ib_NIOS.wapi_request('GET', object_type=""+group_ref_Default+"?_return_fields=name,comment,gmc_promotion_policy,scheduled_time,members,time_zone")
                 print_and_log(get_data)
@@ -1423,8 +1437,8 @@ class RFE_4753_Scheduled_Group_GMC_Promotion(unittest.TestCase):
                 assert gmc_promotion_policy == "SIMULTANEOUSLY"
                 print_and_log("*********** Test Case Execution Completed **********")
 
-        @pytest.mark.run(order=114)
-        def test_114_Validate_Updating_GMC_PROMOTION_POLICY_to_Default_GMC_Group(self):
+        @pytest.mark.run(order=15)
+        def test_015_Validate_Updating_GMC_PROMOTION_POLICY_to_Default_GMC_Group(self):
                 print_and_log("\n********** Validate Updation of GMC Promotion Policy to GMC Group **********")
                 data = {"gmc_promotion_policy": "SEQUENTIALLY"}
                 get_data = ib_NIOS.wapi_request('PUT', object_type=""+group_ref_Default, fields=json.dumps(data))
@@ -1434,8 +1448,8 @@ class RFE_4753_Scheduled_Group_GMC_Promotion(unittest.TestCase):
                 assert re.search(r"Upating promotion policy on Default group is not allowed", errortext1)
                 print_and_log("*********** Test Case Execution Completed **********")
 
-        @pytest.mark.run(order=13)
-        def test_013_Validate_Updating_SCHEDULED_TIME_to_Default_GMC_Group(self):
+        @pytest.mark.run(order=16)
+        def test_016_Validate_Updating_SCHEDULED_TIME_to_Default_GMC_Group(self):
                 print_and_log("\n********** Validate Updation of Scheduled Time to GMC Group **********")
 		#get scheduled time                
                 current_epoch_time = get_current_epoch_time()
@@ -1452,8 +1466,8 @@ class RFE_4753_Scheduled_Group_GMC_Promotion(unittest.TestCase):
 
 
 	# GMC Schedule Object Testing
-        @pytest.mark.run(order=14)
-        def test_014_Getting_GMC_Schedule_Object(self):
+        @pytest.mark.run(order=17)
+        def test_017_Getting_GMC_Schedule_Object(self):
                 print_and_log("\n********** Validating GMC Schedule Object **********")
                 get_data = ib_NIOS.wapi_request('GET', object_type="gmcschedule/"+group_schedule_ref+"?_return_fields=activate_gmc_group_schedule,gmc_groups")
                 print_and_log(get_data)
@@ -1464,8 +1478,8 @@ class RFE_4753_Scheduled_Group_GMC_Promotion(unittest.TestCase):
                 #ToDo: Validations for schedule
                 print_and_log("*********** Test Case Execution Completed **********")
 
-        @pytest.mark.run(order=15)
-        def test_015_Activating_GMC_Schedule(self):
+        @pytest.mark.run(order=18)
+        def test_018_Activating_GMC_Schedule(self):
                 print_and_log("\n********** Activating GMC Schedule **********")
 		data = {"activate_gmc_group_schedule": True}
                 get_data = ib_NIOS.wapi_request('PUT', object_type="gmcschedule/"+group_schedule_ref, fields=json.dumps(data))
@@ -1489,8 +1503,8 @@ class RFE_4753_Scheduled_Group_GMC_Promotion(unittest.TestCase):
                 assert res == "gmcschedule/"+group_schedule_ref
                 print_and_log("*********** Test Case Execution Completed **********")
 
-        @pytest.mark.run(order=115)
-        def test_115_Activating_GMC_Schedule_as_nonsuperuser(self):
+        @pytest.mark.run(order=19)
+        def test_019_Activating_GMC_Schedule_as_nonsuperuser(self):
                 print_and_log("\n********** Activating GMC Schedule as nonsuperuser **********")
 		#non_super_user_group1_name = "non_super_group1"
 		#non_super_user_group1_username1 = "ns_group1_user1"
@@ -1532,8 +1546,8 @@ class RFE_4753_Scheduled_Group_GMC_Promotion(unittest.TestCase):
                 assert res == "gmcschedule/"+group_schedule_ref
                 print_and_log("*********** Test Case Execution Completed **********")
 
-        @pytest.mark.run(order=116)
-        def test_116_Activating_GMC_Schedule(self):
+        @pytest.mark.run(order=20)
+        def test_020_Activating_GMC_Schedule(self):
                 object_type_string = 'admingroup?name=' + non_super_user_group1_name 
                 #res = ib_NIOS.wapi_request('GET',object_type='admingroup?name=non_super_group1')
                 res = ib_NIOS.wapi_request('GET',object_type=object_type_string)
@@ -1542,8 +1556,8 @@ class RFE_4753_Scheduled_Group_GMC_Promotion(unittest.TestCase):
                 ref1=res[0]['_ref']
                 print_and_log("nonsuperuser ref " + ref1)
 
-        @pytest.mark.run(order=16)
-    	def test_016_Making_normal_member_as_GMC(self):
+        @pytest.mark.run(order=21)
+    	def test_021_Making_normal_member_as_GMC(self):
         	print_and_log("\n********** Making Normal Member as GMC  **********")
 		# get members of a ref and ref of member 1
 		master_vip = config.grid1_master_vip 
@@ -1575,8 +1589,8 @@ class RFE_4753_Scheduled_Group_GMC_Promotion(unittest.TestCase):
         	print("-----------Test Case Execution Completed------------")
 
         #Negative Test Case
-        @pytest.mark.run(order=17)
-        def test_017_Validate_Adding_GMC_to_Custom_GMC_Group_should_Fail(self):
+        @pytest.mark.run(order=22)
+        def test_022_Validate_Adding_GMC_to_Custom_GMC_Group_should_Fail(self):
                 print_and_log("\n********** Validate Addition of GMC to Custom GMC Group Should Fail **********")
                 # Add function to make a memebr GMC
                 #data = {"members":[{"member":"vm-sa1.infoblox.com"}, {"member":"gmc1.infoblox.com"}]}
@@ -1603,8 +1617,8 @@ class RFE_4753_Scheduled_Group_GMC_Promotion(unittest.TestCase):
                 print_and_log("*********** Test Case Execution Completed **********")
 
         #Negative Test Case
-        @pytest.mark.run(order=18)
-        def test_018_Validate_Adding_GM_to_Custom_GMC_Group_should_Fail(self):
+        @pytest.mark.run(order=23)
+        def test_023_Validate_Adding_GM_to_Custom_GMC_Group_should_Fail(self):
                 print_and_log("\n********** Validate Addition of GMC to Custom GMC Group Should Fail **********")
                 member1_fqdn = config.grid1_master_fqdn
                 #member2_fqdn = config.grid1_member2_fqdn
@@ -1626,8 +1640,8 @@ class RFE_4753_Scheduled_Group_GMC_Promotion(unittest.TestCase):
                 #ToDo: Validate member is NOT moved out of default group as it is moved to new group
                 print_and_log("*********** Test Case Execution Completed **********")
 
-        @pytest.mark.run(order=19)
-        def test_019_Validate_Deletion_of_GMC_Group(self):
+        @pytest.mark.run(order=24)
+        def test_024_Validate_Deletion_of_GMC_Group(self):
                 print_and_log("\n********** Validate Deletion of GMC Group **********")
                 get_data = ib_NIOS.wapi_request('DELETE', object_type=""+group_ref_gp1)
                 print_and_log(get_data)
@@ -1648,8 +1662,8 @@ class RFE_4753_Scheduled_Group_GMC_Promotion(unittest.TestCase):
                 assert count == 1 and groupname == "Default" and groupref == "gmcgroup/b25lLmdtY19ncm91cCREZWZhdWx0:Default"
                 print_and_log("*********** Test Case Execution Completed **********")
 
-        @pytest.mark.run(order=20)
-        def test_020_Promote_GMC_as_GM(self):
+        @pytest.mark.run(order=25)
+        def test_025_Promote_GMC_as_GM(self):
                 print_and_log("\n********** Promote GMC as GM **********")
 		#promote_master(config.grid1_member2_vip)
 		#check_able_to_login_appliances(config.grid1_member2_vip)
@@ -1665,8 +1679,8 @@ class RFE_4753_Scheduled_Group_GMC_Promotion(unittest.TestCase):
 		check_able_to_login_appliances(member_vip)
 		validate_status_GM_after_GMC_promotion(member_vip)
 
-        @pytest.mark.run(order=21)
-        def test_021_Promote_oldGM_back(self):
+        @pytest.mark.run(order=26)
+        def test_026_Promote_oldGM_back(self):
                 print_and_log("\n********** Promote old GM back **********")
                 #promote_master(config.grid1_member2_vip)
                 #check_able_to_login_appliances(config.grid1_member2_vip)
@@ -1682,16 +1696,16 @@ class RFE_4753_Scheduled_Group_GMC_Promotion(unittest.TestCase):
                 check_able_to_login_appliances(member_vip)
                 validate_status_GM_after_GMC_promotion(member_vip)
 
-        @pytest.mark.run(order=22)
-        def test_022_test_epoch_time(self):
+        @pytest.mark.run(order=27)
+        def test_027_test_epoch_time(self):
                 print_and_log("\n********** Promote GMC as GM **********")
 		current_epoch_time = get_current_epoch_time()
 		print_and_log("current time is " + str(current_epoch_time))
                 schedule_group_time = add_minutes_to_epoch_time(current_epoch_time, 10)
                 print_and_log("current time + 10 minutes is " + str(schedule_group_time))
 
-        @pytest.mark.run(order=23)
-        def test_023_test_member_ips(self):
+        @pytest.mark.run(order=28)
+        def test_028_test_member_ips(self):
                 print_and_log("\n********** Test config *********")
                 #print_and_log("grid master ip " + str(grid_master_vip))
                 #print_and_log("grid grid_member_fqdn " + str(grid_member_fqdn))
@@ -1699,8 +1713,8 @@ class RFE_4753_Scheduled_Group_GMC_Promotion(unittest.TestCase):
                 #print_and_log("grid grid_member1_fqdn " + str(grid_member1_fqdn))
                 print_and_log("grid config.grid1_member1_fqdn " + config.grid1_member1_fqdn)
 
-	@pytest.mark.run(order=24)
-        def test_024_Test_Setting_Schedule_for_GMC_Promotion(self):
+	@pytest.mark.run(order=29)
+        def test_029_Test_Setting_Schedule_for_GMC_Promotion(self):
                 print_and_log("\n********** Test_Scheduled_GMC_Promotion *********")
                 # Create Group gp1
                 #config.grid1_member1_fqdn = "ib-10-35-196-6.infoblox.com"
@@ -1731,8 +1745,8 @@ class RFE_4753_Scheduled_Group_GMC_Promotion(unittest.TestCase):
                 print_and_log("current time + 15 minutes is " + str(schedule_group_time_gp2))
                 Update_SCHEDULED_TIME_and_GMC_PROMOTION_POLICY_to_GMC_Group(group_ref_gp2,schedule_group_time_gp2,"SIMULTANEOUSLY")  
 
-        @pytest.mark.run(order=25)
-        def test_025_Test_Max_allowed_Schedule_time(self):
+        @pytest.mark.run(order=30)
+        def test_030_Test_Max_allowed_Schedule_time(self):
                 #set schedule time for gp2 after 8 hour 15 minutes 
                 schedule_group_time_gp2 = add_minutes_to_epoch_time(current_epoch_time, (8*60 +15))
                 print_and_log("current time + 15 minutes is " + str(schedule_group_time_gp2))
@@ -1760,8 +1774,8 @@ class RFE_4753_Scheduled_Group_GMC_Promotion(unittest.TestCase):
                 print_and_log("current time + 15 minutes is " + str(schedule_group_time_gp2))
                 Update_SCHEDULED_TIME_and_GMC_PROMOTION_POLICY_to_GMC_Group(group_ref_gp1,schedule_group_time_gp2,"SIMULTANEOUSLY")
 
-        @pytest.mark.run(order=26)
-        def test_026_Test_Scheduled_GMC_Promotion(self):
+        @pytest.mark.run(order=31)
+        def test_031_Test_Scheduled_GMC_Promotion(self):
                 # Activate GMC group schedule
                 Activate_GMC_Schedule()        
 
@@ -1778,13 +1792,8 @@ class RFE_4753_Scheduled_Group_GMC_Promotion(unittest.TestCase):
                 check_able_to_login_appliances(member_vip)
                 validate_status_GM_after_GMC_promotion(member_vip)
 
-        @pytest.mark.run(order=138)
-        def test_138_Promote_oldGM_back(self):
-                print_and_log("\n********** Promote old GM back **********")
-                Deactivate_GMC_Schedule()
-
-	@pytest.mark.run(order=138)
-        def test_138_Promote_oldGM_back(self):
+	#@pytest.mark.run(order=32)
+        def remove_test_32_Promote_oldGM_back(self):
                 print_and_log("\n********** Promote old GM back **********")
                 Deactivate_GMC_Schedule(config.grid_member5_vip)
 		master_vip = config.grid_member5_vip
@@ -1795,8 +1804,8 @@ class RFE_4753_Scheduled_Group_GMC_Promotion(unittest.TestCase):
                 check_able_to_login_appliances(member_vip)
                 validate_status_GM_after_GMC_promotion(member_vip)
 
-        @pytest.mark.run(order=27)
-        def test_027_Validate_Members_in_GMCGroup_After_Promotion(self):
+        @pytest.mark.run(order=33)
+        def test_033_Validate_Members_in_GMCGroup_After_Promotion(self):
 		"""
 		temp_grid1_session_ip = config.grid1_session_ip
 		temp_grid1_master_vip = config.grid1_master_vip
@@ -1841,51 +1850,51 @@ class RFE_4753_Scheduled_Group_GMC_Promotion(unittest.TestCase):
                 assert count_members_Default == 2
                 
 
-        @pytest.mark.run(order=28)
-        def test_028_Validate_GMCSchedule_Deactivated_after_promotion_After_Promotion(self):
+        @pytest.mark.run(order=34)
+        def test_034_Validate_GMCSchedule_Deactivated_after_promotion_After_Promotion(self):
                 #Validate schedule status
                 assert Get_GMC_Schedule_Activation_Status() == False
 
 
-        @pytest.mark.run(order=29)
-        def test_029_test_dns_zone_arecords(self):
+        @pytest.mark.run(order=35)
+        def test_035_test_dns_zone_arecords(self):
                 dns_test_zone_arecords(config.grid1_member5_vip, config.grid1_member5_fqdn)
 
-        @pytest.mark.run(order=30)
-        def test_030_test_dns_zone_allrecords_restart_simultaneously(self):
+        @pytest.mark.run(order=36)
+        def test_036_test_dns_zone_allrecords_restart_simultaneously(self):
                 dns_test_zone_allrecords_restart_simultaneously(config.grid1_member5_vip, config.grid1_member5_fqdn)
 
-        @pytest.mark.run(order=31)
-        def test_031_test_dns_recursive_queries(self):
+        @pytest.mark.run(order=37)
+        def test_037_test_dns_recursive_queries(self):
                 dns_test_recursive_queries(config.grid1_member5_vip, config.grid1_member5_fqdn)
 
-        @pytest.mark.run(order=32)
-        def test_032_test_dns_nxdomain_noerror(self):
+        @pytest.mark.run(order=38)
+        def test_038_test_dns_nxdomain_noerror(self):
 		dns_test_nxdomain_noerror(config.grid1_member5_vip, config.grid1_member5_fqdn)
 
-        @pytest.mark.run(order=33)
-        def test_033_test_dhcp_network_leases(self):
+        @pytest.mark.run(order=39)
+        def test_039_test_dhcp_network_leases(self):
 		dhcp_test_network_leases(config.grid1_member5_vip, config.grid1_member5_fqdn)
 
-        @pytest.mark.run(order=34)
-        def test_034_test_dhcp_fingerprint(self):
+        @pytest.mark.run(order=40)
+        def test_040_test_dhcp_fingerprint(self):
 		dhcp_test_fingerprint(config.grid1_member5_vip, config.grid1_member5_fqdn)
 
-        @pytest.mark.run(order=35)
-        def test_035_test_dhcp_usage(self):
+        @pytest.mark.run(order=41)
+        def test_041_test_dhcp_usage(self):
 		dhcp_test_usage(config.grid1_member5_vip, config.grid1_member5_fqdn)
 
-        @pytest.mark.run(order=36)
-        def test_036_backup(self):
-                grid_backup()
+        @pytest.mark.run(order=42)
+        def test_042_backup(self):
+                grid_backup(config.grid1_member5_vip)
 
-        @pytest.mark.run(order=37)
-        def test_037_restore(self):
-                grid_restore()
+        @pytest.mark.run(order=43)
+        def test_043_restore(self):
+                grid_restore(config.grid1_member5_vip)
 
 
-        @pytest.mark.run(order=38)
-        def test_038_Test_Setting_Schedule_for_GMC_Promotion(self):
+        @pytest.mark.run(order=44)
+        def test_044_Test_Setting_Schedule_for_GMC_Promotion(self):
                 print_and_log("\n********** Test_Scheduled_GMC_Promotion *********")
                 # Create Group gp1
                 #config.grid1_member1_fqdn = "ib-10-35-196-6.infoblox.com"
@@ -1916,8 +1925,8 @@ class RFE_4753_Scheduled_Group_GMC_Promotion(unittest.TestCase):
                 print_and_log("current time + 15 minutes is " + str(schedule_group_time_gp2))
                 Update_SCHEDULED_TIME_and_GMC_PROMOTION_POLICY_to_GMC_Group(group_ref_gp2,schedule_group_time_gp2,"SIMULTANEOUSLY")
 
-        @pytest.mark.run(order=39)
-	def test_039_Test_Scheduled_GMC_Promotion(self):
+        @pytest.mark.run(order=45)
+	def test_045_Test_Scheduled_GMC_Promotion(self):
                 # Activate GMC group schedule
                 Activate_GMC_Schedule()
 
@@ -1930,7 +1939,7 @@ class RFE_4753_Scheduled_Group_GMC_Promotion(unittest.TestCase):
                 member_fqdn = config.grid_vip
                 member_vip = config.grid_vip
                 #GMC_promote_member_as_master_candidate(master_vip, member_fqdn)
-                Poweroff_the_member("vm-15-31")
+                Poweroff_the_member(config.grid1_member5_id)
 		promote_master_new(member_vip)
                 join_now(group_ref_gp2)
                 check_able_to_login_appliances(member_vip)
