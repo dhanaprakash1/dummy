@@ -934,7 +934,7 @@ def dhcp_test_fingerprint(master_ip=config.grid_vip, master_fqdn=config.grid1_ma
     # Generate Requested leases for Device Trend, Device Class Trend, Top Device Class Identified, Fingerprint Name Change Detected and (Voip Phones/Adapters)
     cmd=os.popen("sudo /import/tools/qa/tools/dras_opt55/dras -i "+config.grid1_member3_vip+" -n 10 -w -D -O 55:0103060c0f2a424378")
     fp=os.popen("sudo /import/tools/qa/tools/dras/dras -i "+master_ip+" -n 20 -x l=20.0.0.0")
-    print_and_log("%s", ''.join( cmd.readlines()))
+    #print_and_log("%s", ''.join( cmd.readlines()))
     sleep(10)
     # Switches
     cmd1=os.popen("sudo /import/tools/qa/tools/dras_opt55/dras -i "+config.grid1_member3_vip+" -n 10 -w -D -O 55:0103060f1B")
