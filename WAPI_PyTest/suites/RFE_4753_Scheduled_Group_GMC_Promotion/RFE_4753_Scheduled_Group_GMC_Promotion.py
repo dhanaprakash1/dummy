@@ -889,23 +889,23 @@ def dhcp_test_fingerprint(master_ip=config.grid_vip, master_fqdn=config.grid1_ma
     response = ib_NIOS.wapi_request('POST', object_type="networkview", fields=json.dumps(network_view), grid_vip=master_ip)
     print(response)
     # Add Network
-    data = {"members":[{"_struct": "dhcpmember", "ipv4addr":config.grid_member1_vip,"name":config.grid_member1_fqdn}], \
+    data = {"members":[{"_struct": "dhcpmember", "ipv4addr":config.grid1_member3_vip,"name":config.grid1_member3_fqdn}], \
      "network": "10.0.0.0/8", "network_view": "network_view_dhcp"}
     response = ib_NIOS.wapi_request('POST', object_type="network", fields=json.dumps(data), grid_vip=master_ip)
     print(response)
-    data = {"members":[{"_struct": "dhcpmember", "ipv4addr":config.grid_member1_vip,"name":config.grid_member1_fqdn}], \
+    data = {"members":[{"_struct": "dhcpmember", "ipv4addr":config.grid1_member3_vip,"name":config.grid1_member3_fqdn}], \
      "network": "51.0.0.0/24", "network_view": "network_view_dhcp"}
     response = ib_NIOS.wapi_request('POST', object_type="network", fields=json.dumps(data), grid_vip=master_ip)
     print(response)
     #Add Range
-    range_obj = {"start_addr":"51.0.0.1","end_addr":"51.0.0.100","member":{"_struct": "dhcpmember","ipv4addr":config.grid_member1_vip, \
-     "name":config.grid_member1_fqdn},"network_view":"network_view_dhcp", \
+    range_obj = {"start_addr":"51.0.0.1","end_addr":"51.0.0.100","member":{"_struct": "dhcpmember","ipv4addr":config.grid1_member3_vip, \
+     "name":config.grid1_member3_fqdn},"network_view":"network_view_dhcp", \
      "options":[{"_struct": "dhcpoption","name":"dhcp-lease-time","num": 51,"use_option": True,"value": "300","vendor_class": "DHCP"}]}
     range = ib_NIOS.wapi_request('POST', object_type="range", fields=json.dumps(range_obj), grid_vip=master_ip)
     print(range)
 
-    range_obj = {"start_addr":"10.0.0.1","end_addr":"10.0.0.100","member":{"_struct": "dhcpmember","ipv4addr":config.grid_member1_vip, \
-     "name":config.grid_member1_fqdn},"network_view":"network_view_dhcp", \
+    range_obj = {"start_addr":"10.0.0.1","end_addr":"10.0.0.100","member":{"_struct": "dhcpmember","ipv4addr":config.grid1_member3_vip, \
+     "name":config.grid1_member3_fqdn},"network_view":"network_view_dhcp", \
      "options":[{"_struct": "dhcpoption","name":"dhcp-lease-time","num": 51,"use_option": True,"value": "300","vendor_class": "DHCP"}]}
     range = ib_NIOS.wapi_request('POST', object_type="range", fields=json.dumps(range_obj), grid_vip=master_ip)
     print(range)
@@ -932,21 +932,21 @@ def dhcp_test_fingerprint(master_ip=config.grid_vip, master_fqdn=config.grid1_ma
     sleep(160)
 
     # Generate Requested leases for Device Trend, Device Class Trend, Top Device Class Identified, Fingerprint Name Change Detected and (Voip Phones/Adapters)
-    cmd=os.popen("sudo /import/tools/qa/tools/dras_opt55/dras -i "+config.grid_member1_vip+" -n 10 -w -D -O 55:0103060c0f2a424378")
+    cmd=os.popen("sudo /import/tools/qa/tools/dras_opt55/dras -i "+config.grid1_member3_vip+" -n 10 -w -D -O 55:0103060c0f2a424378")
     fp=os.popen("sudo /import/tools/qa/tools/dras/dras -i "+master_ip+" -n 20 -x l=20.0.0.0")
     print_and_log("%s", ''.join( cmd.readlines()))
     sleep(10)
     # Switches
-    cmd1=os.popen("sudo /import/tools/qa/tools/dras_opt55/dras -i "+config.grid_member1_vip+" -n 10 -w -D -O 55:0103060f1B")
+    cmd1=os.popen("sudo /import/tools/qa/tools/dras_opt55/dras -i "+config.grid1_member3_vip+" -n 10 -w -D -O 55:0103060f1B")
     print_and_log("%s", ''.join( cmd1.readlines()))
     #sleep(30)
     # Apple Airport  ( Device Fingerprint Name Change Detected Report )
-    cmd2=os.popen("sudo /import/tools/qa/tools/dras_opt55/dras -i "+config.grid_member1_vip+" -n 1 -w -D -O 55:1c03060f -a  aa:11:bb:22:cc:33")
+    cmd2=os.popen("sudo /import/tools/qa/tools/dras_opt55/dras -i "+config.grid1_member3_vip+" -n 1 -w -D -O 55:1c03060f -a  aa:11:bb:22:cc:33")
     print_and_log("%s", ''.join( cmd2.readlines()))
     #sleep(180)
     # AP Meraki
-    cmd3=os.popen("sudo /import/tools/qa/tools/dras_opt55/dras -i "+config.grid_member1_vip+" -n 1 -w -D -O 55:0103060c0f1a1c28292a -a aa:11:bb:22:cc:33")
-    cmd3=os.popen("sudo /import/tools/qa/tools/dras_opt55/dras -i "+config.grid_member1_vip+" -n 1 -w -D -O  55:0103060f0c13 -a aa:11:bb:22:cc:33")
+    cmd3=os.popen("sudo /import/tools/qa/tools/dras_opt55/dras -i "+config.grid1_member3_vip+" -n 1 -w -D -O 55:0103060c0f1a1c28292a -a aa:11:bb:22:cc:33")
+    cmd3=os.popen("sudo /import/tools/qa/tools/dras_opt55/dras -i "+config.grid1_member3_vip+" -n 1 -w -D -O  55:0103060f0c13 -a aa:11:bb:22:cc:33")
     #print_and_log("%s", ''.join( cmd3.readlines()))
 
     # Add Fingerprint Filter to Generate lease for DHCP TOP DEVICE Denied IP Address
@@ -967,7 +967,7 @@ def dhcp_test_fingerprint(master_ip=config.grid_vip, master_fqdn=config.grid1_ma
     sleep(160)
     
     # Alps Electric For DHCP TOP DEVICE Denied IP Address
-    cmd4=os.popen("sudo /import/tools/qa/tools/dras_opt55/dras -i "+config.grid_member1_vip+" -n 1 -w -D -O 55:010304060f")
+    cmd4=os.popen("sudo /import/tools/qa/tools/dras_opt55/dras -i "+config.grid1_member3_vip+" -n 1 -w -D -O 55:010304060f")
     print_and_log("%s", ''.join( cmd4.readlines()))
     sleep(30)
     #Restarting
@@ -1012,30 +1012,30 @@ def dhcp_test_usage(master_ip=config.grid_vip, master_fqdn=config.grid1_master_f
     response = ib_NIOS.wapi_request('POST', object_type="networkview", fields=json.dumps(network_view), grid_vip=master_ip)
 
     #Add Network
-    network_data = {"members":[{"_struct": "dhcpmember", "ipv4addr": config.grid_member2_vip,"name":config.grid_member2_fqdn}], \
+    network_data = {"members":[{"_struct": "dhcpmember", "ipv4addr": config.grid1_member2_vip,"name":config.grid1_member2_fqdn}], \
                     "network":"10.0.0.0/8","network_view":"custom_view_1"}
     response = ib_NIOS.wapi_request('POST', object_type="network", fields=json.dumps(network_data), grid_vip=master_ip)
 
-    network_data_30 = {"members":[{"_struct": "dhcpmember", "ipv4addr": config.grid_member2_vip,"name":config.grid_member2_fqdn}], \
+    network_data_30 = {"members":[{"_struct": "dhcpmember", "ipv4addr": config.grid1_member2_vip,"name":config.grid1_member2_fqdn}], \
                        "network":"30.0.0.0/24","network_view":"custom_view_1"}
     response = ib_NIOS.wapi_request('POST', object_type="network", fields=json.dumps(network_data_30), grid_vip=master_ip)
 
-    network_data_32 = {"members":[{"_struct": "dhcpmember", "ipv4addr": config.grid_member2_vip,"name":config.grid_member2_fqdn}],\
+    network_data_32 = {"members":[{"_struct": "dhcpmember", "ipv4addr": config.grid1_member2_vip,"name":config.grid1_member2_fqdn}],\
                         "network":"32.0.0.0/24","network_view":"custom_view_1"}
     response = ib_NIOS.wapi_request('POST', object_type="network", fields=json.dumps(network_data_32), grid_vip=master_ip)
     #Add Range
 
     range_obj = {"start_addr":"10.0.0.1","end_addr":"10.0.0.50","network_view":"custom_view_1","member":{"_struct": "dhcpmember", \
-    "ipv4addr":config.grid_member2_vip,"name": config.grid_member2_fqdn},"mac_filter_rules":[{"filter": "mac1","permission": "Allow"}]}
+    "ipv4addr":config.grid1_member2_vip,"name": config.grid1_member2_fqdn},"mac_filter_rules":[{"filter": "mac1","permission": "Allow"}]}
     range = ib_NIOS.wapi_request('POST', object_type="range", fields=json.dumps(range_obj), grid_vip=master_ip)
 
 
     range_obj = {"start_addr":"30.0.0.1","end_addr":"30.0.0.50","network_view":"custom_view_1","member":{"_struct": "dhcpmember", \
-    "ipv4addr":config.grid_member2_vip,"name": config.grid_member2_fqdn},"mac_filter_rules":[{"filter": "mac1","permission": "Allow"}]}
+    "ipv4addr":config.grid1_member2_vip,"name": config.grid1_member2_fqdn},"mac_filter_rules":[{"filter": "mac1","permission": "Allow"}]}
     range = ib_NIOS.wapi_request('POST', object_type="range", fields=json.dumps(range_obj), grid_vip=master_ip)
 
     range_obj_25 = {"start_addr":"32.0.0.1","end_addr":"32.0.0.100","network_view":"custom_view_1","member":{"_struct": "dhcpmember", \
-    "ipv4addr":config.grid_member2_vip,"name": config.grid_member2_fqdn},"mac_filter_rules":[{"filter": "mac2","permission": "Allow"}]}
+    "ipv4addr":config.grid1_member2_vip,"name": config.grid1_member2_fqdn},"mac_filter_rules":[{"filter": "mac2","permission": "Allow"}]}
     range = ib_NIOS.wapi_request('POST', object_type="range", fields=json.dumps(range_obj_25), grid_vip=master_ip)
 
     #Add Fixed Address
@@ -1070,11 +1070,11 @@ def dhcp_test_usage(master_ip=config.grid_vip, master_fqdn=config.grid1_master_f
 
     sleep(120)
 
-    cmd9=os.popen("sudo /import/tools/qa/tools/dras/dras -i "+config.grid_member2_vip+" -n 1 -a 11:22:33:44:55:66")
+    cmd9=os.popen("sudo /import/tools/qa/tools/dras/dras -i "+config.grid1_member2_vip+" -n 1 -a 11:22:33:44:55:66")
     print_and_log("%s", ''.join( cmd9.readlines()))
     sleep(30)
 
-    cmd10=os.popen("sudo /import/tools/qa/tools/dras/dras -i "+config.grid_member2_vip+" -n 1 -x l=32.0.0.0 -a 99:66:33:88:55:22")
+    cmd10=os.popen("sudo /import/tools/qa/tools/dras/dras -i "+config.grid1_member2_vip+" -n 1 -x l=32.0.0.0 -a 99:66:33:88:55:22")
     print_and_log("%s", ''.join( cmd10.readlines()))
     sleep(10)
 
