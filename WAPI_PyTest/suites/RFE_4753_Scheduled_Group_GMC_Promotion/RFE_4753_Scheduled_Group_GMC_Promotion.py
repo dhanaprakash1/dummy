@@ -55,12 +55,12 @@ def print_and_log_footer(arg=""):
 
 
 #GMC group WAPI Requests functions
-def Get_GMC_Groups():
+def Get_GMC_Groups(master_ip=config.grid_vip):
         print_and_log("Get GMC groups in the grid")
-	get_data = ib_NIOS.wapi_request('GET', object_type="gmcgroup")
+	get_data = ib_NIOS.wapi_request('GET', object_type="gmcgroup", grid_vip=master_ip)
 	gmc_groups = json.loads(get_data)
+	print_and_log("GMC Groups in the grid are : " + str(gmc_groups))
 	return gmc_groups
-	print_and_log("GMC Groups in the grid are : " + gmc_groups)
 
 def Count_GMC_Groups(local_gmc_groups):
 	print_and_log("Count GMC groups in the grid")
@@ -143,9 +143,9 @@ def join_now(group_name):
                 print_and_log(res)
 
 
-def Get_GMC_Schedule_Activation_Status():
+def Get_GMC_Schedule_Activation_Status(master_ip=config.grid_vip):
                 # Get  GMC schedule 
-                get_data = ib_NIOS.wapi_request('GET', object_type="gmcschedule/"+group_schedule_ref+"?_return_fields=activate_gmc_group_schedule,gmc_groups")
+                get_data = ib_NIOS.wapi_request('GET', object_type="gmcschedule/"+group_schedule_ref+"?_return_fields=activate_gmc_group_schedule,gmc_groups", grid_vip=master_ip)
                 print_and_log(get_data)
                 res = json.loads(get_data)
                 print_and_log(res)
@@ -153,7 +153,7 @@ def Get_GMC_Schedule_Activation_Status():
                 return activate_status_gmcschedule
 		#assert activate_status_gmcschedule == True
 
-def Activate_GMC_Schedule():
+def Activate_GMC_Schedule(master_ip=config.grid_vip):
                 print_and_log("\n********** Activating GMC Schedule **********")
                 data = {"activate_gmc_group_schedule": True}
                 get_data = ib_NIOS.wapi_request('PUT', object_type="gmcschedule/"+group_schedule_ref, fields=json.dumps(data))
@@ -162,7 +162,7 @@ def Activate_GMC_Schedule():
                 print_and_log(res)
                 assert res == "gmcschedule/"+group_schedule_ref
                 # Validate GMC schedule is active
-                get_data = ib_NIOS.wapi_request('GET', object_type="gmcschedule/"+group_schedule_ref+"?_return_fields=activate_gmc_group_schedule,gmc_groups")
+                get_data = ib_NIOS.wapi_request('GET', object_type="gmcschedule/"+group_schedule_ref+"?_return_fields=activate_gmc_group_schedule,gmc_groups", grid_vip=master_ip)
                 print_and_log(get_data)
                 res = json.loads(get_data)
                 print_and_log(res)
@@ -170,7 +170,7 @@ def Activate_GMC_Schedule():
                 assert activate_status_gmcschedule == True
                 print_and_log("*********** Function Execution Completed **********")
 
-def Deactivate_GMC_Schedule():
+def Deactivate_GMC_Schedule(master_ip=config.grid_vip):
                 print_and_log("\nFunction: ********** Deactivating GMC Schedule **********")
                 #Deactivate schedule to bring back to base state
                 data = {"activate_gmc_group_schedule": False}
@@ -180,7 +180,7 @@ def Deactivate_GMC_Schedule():
                 print_and_log(res)
                 assert res == "gmcschedule/"+group_schedule_ref
                 # Validate GMC schedule is inactive
-                get_data = ib_NIOS.wapi_request('GET', object_type="gmcschedule/"+group_schedule_ref+"?_return_fields=activate_gmc_group_schedule,gmc_groups")
+                get_data = ib_NIOS.wapi_request('GET', object_type="gmcschedule/"+group_schedule_ref+"?_return_fields=activate_gmc_group_schedule,gmc_groups", grid_vip=master_ip)
                 print_and_log(get_data)
                 res = json.loads(get_data)
                 print_and_log(res)
@@ -209,9 +209,10 @@ def Update_SCHEDULED_TIME_and_GMC_PROMOTION_POLICY_to_GMC_Group(group_ref, sched
 		assert gmc_promotion_policy == data["gmc_promotion_policy"] and scheduled_time == data["scheduled_time"]
                 print_and_log("*********** Function Execution Completed **********")
 
-def Get_Count_of_members_in_GMCGroup(group_ref):
+def Get_Count_of_members_in_GMCGroup(group_ref, master_ip=config.grid_vip):
                 # Validate member is added to gp1 group
-                get_data = ib_NIOS.wapi_request('GET', object_type=""+group_ref+"?_return_fields=name,comment,gmc_promotion_policy,scheduled_time,members,time_zone")
+		print_and_log("Current Grid master vip is " + config.grid_vip)
+                get_data = ib_NIOS.wapi_request('GET', object_type=""+group_ref+"?_return_fields=name,comment,gmc_promotion_policy,scheduled_time,members,time_zone", grid_vip=master_ip)
                 print_and_log(get_data)
                 res = json.loads(get_data)
                 print_and_log(res)
@@ -623,10 +624,10 @@ def get_admingroup_ref(non_super_user_group1_username1):
                 print_and_log("nonsuperuser ref " + ref1)
 
 #backup restore
-def grid_backup():
+def grid_backup(master_ip=config.grid_vip):
         print ("Take Grid Backup")
         data = {"type": "BACKUP"}
-        response = ib_NIOS.wapi_request('POST', object_type="fileop?_function=getgriddata", fields=json.dumps(data))
+        response = ib_NIOS.wapi_request('POST', object_type="fileop?_function=getgriddata", fields=json.dumps(data), grid_vip=master_ip)
         res = json.loads(response)
         URL=res['url']
         print("URL is : %s", URL)
@@ -641,9 +642,9 @@ def grid_backup():
         logging.info("Backup Completed")
         sleep(10)
 
-def grid_restore():
+def grid_restore(master_ip=config.grid_vip):
         logging.info("Grid Restore")
-        response = ib_NIOS.wapi_request('POST', object_type="fileop?_function=uploadinit")
+        response = ib_NIOS.wapi_request('POST', object_type="fileop?_function=uploadinit", grid_vip=master_ip)
         print response
         res = json.loads(response)
         URL=res['url']
@@ -673,27 +674,27 @@ def grid_restore():
 
 
 #DNS functions 
-def dns_test_zone_arecords():
+def dns_test_zone_arecords(master_ip=config.grid_vip, master_fqdn=config.grid1_master_fqdn):
     #adding Zone
-    zone1 = {"fqdn":"top_clients_per_domain.com","view":"default","grid_primary": [{"name": config.grid_fqdn,"stealth": False}]}
-    response = ib_NIOS.wapi_request('POST', object_type="zone_auth", fields=json.dumps(zone1))
+    zone1 = {"fqdn":"top_clients_per_domain.com","view":"default","grid_primary": [{"name": master_fqdn,"stealth": False}]}
+    response = ib_NIOS.wapi_request('POST', object_type="zone_auth", fields=json.dumps(zone1), grid_vip=master_ip)
     print(response)
     #Restarting 
-    grid =  ib_NIOS.wapi_request('GET', object_type="grid")
+    grid =  ib_NIOS.wapi_request('GET', object_type="grid", grid_vip=master_ip)
     ref = json.loads(grid)[0]['_ref']
-    request_restart = ib_NIOS.wapi_request('POST', object_type = ref + "?_function=requestrestartservicestatus")
-    restart = ib_NIOS.wapi_request('POST', object_type = ref + "?_function=restartservices")
+    request_restart = ib_NIOS.wapi_request('POST', object_type = ref + "?_function=requestrestartservicestatus", grid_vip=master_ip)
+    restart = ib_NIOS.wapi_request('POST', object_type = ref + "?_function=restartservices", grid_vip=master_ip)
     sleep(60)
 
     #Adding RR's
     a_record1 = {"name":"domain1.top_clients_per_domain.com","ipv4addr":"10.10.10.10"}
-    ref_admin_a = ib_NIOS.wapi_request('POST', object_type="record:a", fields=json.dumps(a_record1))
+    ref_admin_a = ib_NIOS.wapi_request('POST', object_type="record:a", fields=json.dumps(a_record1), grid_vip=master_ip)
     print(ref_admin_a)
     a_record2 = {"name":"domain2.top_clients_per_domain.com","ipv4addr":"20.20.20.20"}
-    ref_admin_a = ib_NIOS.wapi_request('POST', object_type="record:a", fields=json.dumps(a_record2))
+    ref_admin_a = ib_NIOS.wapi_request('POST', object_type="record:a", fields=json.dumps(a_record2), grid_vip=master_ip)
     print(ref_admin_a)
     a_record3 = {"name":"domain3.top_clients_per_domain.com","ipv4addr":"30.30.30.30"}
-    ref_admin_a = ib_NIOS.wapi_request('POST', object_type="record:a", fields=json.dumps(a_record3))
+    ref_admin_a = ib_NIOS.wapi_request('POST', object_type="record:a", fields=json.dumps(a_record3), grid_vip=master_ip)
     print(ref_admin_a)
 
 
@@ -1508,7 +1509,7 @@ class RFE_4753_Scheduled_Group_GMC_Promotion(unittest.TestCase):
                 #print_and_log("nonsuperuser ref " + ref1)
 		#Activate GMC schedule as non-super-user
                 data = {"activate_gmc_group_schedule": True}
-                get_data = ib_NIOS.wapi_request('PUT', object_type="gmcschedule/"+group_schedule_ref, fields=json.dumps(data), ref=group_ref)
+                get_data = ib_NIOS.wapi_request('PUT', object_type="gmcschedule/"+group_schedule_ref, fields=json.dumps(data), user=non_super_user_group1_username1, password=non_super_user_group1_password1)
                 print_and_log(get_data)
                 res = json.loads(get_data)
                 print_and_log(res)
@@ -1778,15 +1779,68 @@ class RFE_4753_Scheduled_Group_GMC_Promotion(unittest.TestCase):
                 check_able_to_login_appliances(member_vip)
                 validate_status_GM_after_GMC_promotion(member_vip)
 
+        @pytest.mark.run(order=138)
+        def test_138_Promote_oldGM_back(self):
+                print_and_log("\n********** Promote old GM back **********")
+                Deactivate_GMC_Schedule()
+
+	@pytest.mark.run(order=138)
+        def test_138_Promote_oldGM_back(self):
+                print_and_log("\n********** Promote old GM back **********")
+                Deactivate_GMC_Schedule(config.grid_member5_vip)
+		master_vip = config.grid_member5_vip
+                member_fqdn = config.grid_fqdn
+                member_vip = config.grid_vip
+                GMC_promote_member_as_master_candidate(master_vip, member_fqdn)
+                promote_master(member_vip)
+                check_able_to_login_appliances(member_vip)
+                validate_status_GM_after_GMC_promotion(member_vip)
+
         @pytest.mark.run(order=27)
         def test_027_Validate_Members_in_GMCGroup_After_Promotion(self):
+		"""
+		temp_grid1_session_ip = config.grid1_session_ip
+		temp_grid1_master_vip = config.grid1_master_vip
+		temp_grid1_master_fqdn = config.grid1_master_fqdn
+		temp_grid1_master_mgmt_vip = config.grid1_master_mgmt_vip
+		temp_grid1_master_id = config.grid1_master_id
+		temp_grid1_master_ipv6 = config.grid1_master_ipv6
+		temp_grid1_master_mgmt_vip6 = config.grid1_master_mgmt_vip6
+
+		config.grid1_session_ip=config.grid1_member5_vip
+		config.grid1_master_vip=config.grid1_member5_vip
+		config.grid1_master_fqdn=config.grid1_member5_fqdn
+		config.grid1_master_mgmt_vip=config.grid1_member5_mgmt_ip
+		config.grid1_master_id=config.grid1_member5_id
+		config.grid1_master_ipv6=config.grid1_member5_ipv6
+		config.grid1_master_mgmt_vip6=config.grid1_member5_mgmt_ipv6
+
+                config.grid1_member5_vip=temp_grid1_master_vip
+		config.grid1_member5_fqdn=temp_grid1_master_fqdn
+		config.grid1_member5_id=temp_grid1_master_id
+		config.grid1_member5_ipv6=temp_grid1_master_ipv6
+		config.grid1_member5_mgmt_ip=temp_grid1_master_mgmt_vip
+		config.grid1_member5_mgmt_ipv6=temp_grid1_master_mgmt_vip6		
+		"""
+                
+		#config.grid_vip = config.grid1_member5_vip
+		GRIDVIP = config.grid1_member5_vip
+		USERNAME = config.username
+		PASSWORD = config.password
+
+		print_and_log("New Grid VIP is " + config.grid_vip)
+		print_and_log("New master is config.grid1_member5_vip " + config.grid1_member5_vip + " Old master is config.grid1_master_vip " + config.grid1_master_vip)
+		groups_info = Get_GMC_Groups(config.grid1_member5_vip)
+                print_and_log("groups " + str(groups_info))
+                
                 #Validate members in gmc groups
-                count_members_gp1 = Get_Count_of_members_in_GMCGroup(group_ref_gp1)
+                count_members_gp1 = Get_Count_of_members_in_GMCGroup(group_ref_gp1, config.grid1_member5_vip)
                 assert count_members_gp1 == 2
-                count_members_gp2 = Get_Count_of_members_in_GMCGroup(group_ref_gp2)
+                count_members_gp2 = Get_Count_of_members_in_GMCGroup(group_ref_gp2, config.grid1_member5_vip)
                 assert count_members_gp2 == 2
-                count_members_Default = Get_Count_of_members_in_GMCGroup(group_ref_Default)
+                count_members_Default = Get_Count_of_members_in_GMCGroup(group_ref_Default, config.grid1_member5_vip)
                 assert count_members_Default == 2
+                
 
         @pytest.mark.run(order=28)
         def test_028_Validate_GMCSchedule_Deactivated_after_promotion_After_Promotion(self):
@@ -1796,7 +1850,7 @@ class RFE_4753_Scheduled_Group_GMC_Promotion(unittest.TestCase):
 
         @pytest.mark.run(order=29)
         def test_029_test_dns_zone_arecords(self):
-                dns_test_zone_arecords()
+                dns_test_zone_arecords(config.grid1_member5_vip, config.grid1_member5_fqdn)
 
         @pytest.mark.run(order=30)
         def test_030_test_dns_zone_allrecords_restart_simultaneously(self):
@@ -1886,7 +1940,7 @@ class RFE_4753_Scheduled_Group_GMC_Promotion(unittest.TestCase):
         @pytest.mark.run(order=138)
         def test_138_Promote_oldGM_back(self):
                 print_and_log("\n********** Promote old GM back **********")
-                master_vip = config.grid_member5_vip
+                master_vip = config.grid1_member5_vip
                 member_fqdn = config.grid_fqdn
                 member_vip = config.grid_vip
                 GMC_promote_member_as_master_candidate(master_vip, member_fqdn)
