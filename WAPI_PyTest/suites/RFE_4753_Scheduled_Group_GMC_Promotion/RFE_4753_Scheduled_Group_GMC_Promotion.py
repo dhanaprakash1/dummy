@@ -35,6 +35,10 @@ global non_super_user_group1_ref
 non_super_user_group1_username1 = "ns_group1_user1"; global non_super_user_group1_username1
 non_super_user_group1_password1 = "infoblox"; global non_super_user_group1_password1
 global non_super_user_group1_username1_ref
+global schedule_group_time_gp1
+global schedule_group_time_gp2
+
+
 
 #supporting Functions
 def print_and_log(arg=""):
@@ -316,27 +320,34 @@ def promote_master_new(IP):
         child1.sendline('infoblox')
         child1.expect('Infoblox >')
         child1.sendline('set promote_master')
-        child1.expect('y or n')
+ 
+       #offline members
+	#child1.expect('y or n')
+        #child1.sendline('y')
+
+	#disaster recovery
+	child1.expect('y or n')
         child1.sendline('y')
+
         # scheduled time expired
         #child1.expect('y or n')
         #child1.sendline('y')
         
-        # disaster recovery feature confirmation
+        # will come grid master
         child1.expect('y or n')
         child1.sendline('y')
 
-        #child1.expect('Default: 30s')
-        #child1.sendline('\n')
-        #child1.expect('y or n')
+        child1.expect('Default: 30s')
+        child1.sendline('\n')
+        child1.expect('y or n')
 
-        #child1.sendline('y\n')
+        child1.sendline('y\n')
 
-        #child1.expect('y or n')
-        #child1.sendline('y\n')
+        child1.expect('y or n')
+        child1.sendline('y\n')
 
-        #child1.expect('y or n')
-        #child1.sendline('y\n')
+        child1.expect('y or n')
+        child1.sendline('y\n')
 
         sleep(120)
         output = child1.before
@@ -1759,9 +1770,9 @@ class RFE_4753_Scheduled_Group_GMC_Promotion(unittest.TestCase):
                 #config.grid_member5_vip = "10.35.112.3" 
                 
 		# Promote Master
-                master_vip = config.grid_vip
-                member_fqdn = config.member5_fqdn
-                member_vip = config.grid_member5_vip
+                master_vip = config.grid1_master_vip
+                member_fqdn = config.grid1_member5_fqdn
+                member_vip = config.grid1_member5_vip
                 GMC_promote_member_as_master_candidate(master_vip, member_fqdn)
                 promote_master_new(member_vip)
                 check_able_to_login_appliances(member_vip)
