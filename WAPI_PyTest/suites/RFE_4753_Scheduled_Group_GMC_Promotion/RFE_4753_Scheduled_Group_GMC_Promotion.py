@@ -942,7 +942,7 @@ def dhcp_test_fingerprint(master_ip=config.grid_vip, master_fqdn=config.grid1_ma
     #sleep(30)
     # Apple Airport  ( Device Fingerprint Name Change Detected Report )
     cmd2=os.popen("sudo /import/tools/qa/tools/dras_opt55/dras -i "+config.grid1_member3_vip+" -n 1 -w -D -O 55:1c03060f -a  aa:11:bb:22:cc:33")
-    print_and_log("%s", ''.join( cmd2.readlines()))
+    #print_and_log("%s", ''.join( cmd2.readlines()))
     #sleep(180)
     # AP Meraki
     cmd3=os.popen("sudo /import/tools/qa/tools/dras_opt55/dras -i "+config.grid1_member3_vip+" -n 1 -w -D -O 55:0103060c0f1a1c28292a -a aa:11:bb:22:cc:33")
