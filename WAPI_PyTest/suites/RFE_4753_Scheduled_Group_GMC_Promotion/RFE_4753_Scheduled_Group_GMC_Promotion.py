@@ -901,8 +901,8 @@ def dhcp_test_network_leases(master_ip=config.grid_vip, master_fqdn=config.grid1
     sleep(60)
 
 # Requesting 200 Leases
-    cmd1 = os.system("sudo /import/tools/qa/tools/dras/dras  -n 10 -i "+master_ip)
-    print(cmd1)
+    #cmd1 = os.system("sudo /import/tools/qa/tools/dras/dras  -n 10 -i "+master_ip)
+    #print(cmd1)
     #cmd2 = os.system("sudo /import/tools/qa/tools/dras6/dras6  -n 10 -i "+config.grid_ipv6+" -A")
     #print(cmd2)
 
@@ -957,21 +957,21 @@ def dhcp_test_fingerprint(master_ip=config.grid_vip, master_fqdn=config.grid1_ma
     sleep(160)
 
     # Generate Requested leases for Device Trend, Device Class Trend, Top Device Class Identified, Fingerprint Name Change Detected and (Voip Phones/Adapters)
-    cmd=os.popen("sudo /import/tools/qa/tools/dras_opt55/dras -i "+config.grid1_member3_vip+" -n 10 -w -D -O 55:0103060c0f2a424378")
-    fp=os.popen("sudo /import/tools/qa/tools/dras/dras -i "+master_ip+" -n 20 -x l=20.0.0.0")
+    #cmd=os.popen("sudo /import/tools/qa/tools/dras_opt55/dras -i "+config.grid1_member3_vip+" -n 10 -w -D -O 55:0103060c0f2a424378")
+    #fp=os.popen("sudo /import/tools/qa/tools/dras/dras -i "+master_ip+" -n 20 -x l=20.0.0.0")
     #print_and_log("%s", ''.join( cmd.readlines()))
-    sleep(10)
+    #sleep(10)
     # Switches
-    cmd1=os.popen("sudo /import/tools/qa/tools/dras_opt55/dras -i "+config.grid1_member3_vip+" -n 10 -w -D -O 55:0103060f1B")
+    #cmd1=os.popen("sudo /import/tools/qa/tools/dras_opt55/dras -i "+config.grid1_member3_vip+" -n 10 -w -D -O 55:0103060f1B")
     #print_and_log("%s", ''.join( cmd1.readlines()))
     #sleep(30)
     # Apple Airport  ( Device Fingerprint Name Change Detected Report )
-    cmd2=os.popen("sudo /import/tools/qa/tools/dras_opt55/dras -i "+config.grid1_member3_vip+" -n 1 -w -D -O 55:1c03060f -a  aa:11:bb:22:cc:33")
+    #cmd2=os.popen("sudo /import/tools/qa/tools/dras_opt55/dras -i "+config.grid1_member3_vip+" -n 1 -w -D -O 55:1c03060f -a  aa:11:bb:22:cc:33")
     #print_and_log("%s", ''.join( cmd2.readlines()))
     #sleep(180)
     # AP Meraki
-    cmd3=os.popen("sudo /import/tools/qa/tools/dras_opt55/dras -i "+config.grid1_member3_vip+" -n 1 -w -D -O 55:0103060c0f1a1c28292a -a aa:11:bb:22:cc:33")
-    cmd3=os.popen("sudo /import/tools/qa/tools/dras_opt55/dras -i "+config.grid1_member3_vip+" -n 1 -w -D -O  55:0103060f0c13 -a aa:11:bb:22:cc:33")
+    #cmd3=os.popen("sudo /import/tools/qa/tools/dras_opt55/dras -i "+config.grid1_member3_vip+" -n 1 -w -D -O 55:0103060c0f1a1c28292a -a aa:11:bb:22:cc:33")
+    #cmd3=os.popen("sudo /import/tools/qa/tools/dras_opt55/dras -i "+config.grid1_member3_vip+" -n 1 -w -D -O  55:0103060f0c13 -a aa:11:bb:22:cc:33")
     #print_and_log("%s", ''.join( cmd3.readlines()))
 
     # Add Fingerprint Filter to Generate lease for DHCP TOP DEVICE Denied IP Address
@@ -992,8 +992,8 @@ def dhcp_test_fingerprint(master_ip=config.grid_vip, master_fqdn=config.grid1_ma
     sleep(160)
     
     # Alps Electric For DHCP TOP DEVICE Denied IP Address
-    cmd4=os.popen("sudo /import/tools/qa/tools/dras_opt55/dras -i "+config.grid1_member3_vip+" -n 1 -w -D -O 55:010304060f")
-    print_and_log("%s", ''.join( cmd4.readlines()))
+    #cmd4=os.popen("sudo /import/tools/qa/tools/dras_opt55/dras -i "+config.grid1_member3_vip+" -n 1 -w -D -O 55:010304060f")
+    #print_and_log("%s", ''.join( cmd4.readlines()))
     sleep(30)
     #Restarting
     grid =  ib_NIOS.wapi_request('GET', object_type="grid", grid_vip=master_ip)
@@ -1093,15 +1093,15 @@ def dhcp_test_usage(master_ip=config.grid_vip, master_fqdn=config.grid1_master_f
     request_restart = ib_NIOS.wapi_request('POST', object_type = ref + "?_function=requestrestartservicestatus", grid_vip=master_ip)
     restart = ib_NIOS.wapi_request('POST', object_type = ref + "?_function=restartservices", grid_vip=master_ip)
 
-    sleep(120)
+    #sleep(120)
 
-    cmd9=os.popen("sudo /import/tools/qa/tools/dras/dras -i "+config.grid1_member2_vip+" -n 1 -a 11:22:33:44:55:66")
+    #cmd9=os.popen("sudo /import/tools/qa/tools/dras/dras -i "+config.grid1_member2_vip+" -n 1 -a 11:22:33:44:55:66")
     #print_and_log("%s", ''.join( cmd9.readlines()))
-    sleep(30)
+    #sleep(30)
 
-    cmd10=os.popen("sudo /import/tools/qa/tools/dras/dras -i "+config.grid1_member2_vip+" -n 1 -x l=32.0.0.0 -a 99:66:33:88:55:22")
+    #cmd10=os.popen("sudo /import/tools/qa/tools/dras/dras -i "+config.grid1_member2_vip+" -n 1 -x l=32.0.0.0 -a 99:66:33:88:55:22")
     #print_and_log("%s", ''.join( cmd10.readlines()))
-    sleep(10)
+    #sleep(10)
 
 
     #Restarting
@@ -1110,7 +1110,7 @@ def dhcp_test_usage(master_ip=config.grid_vip, master_fqdn=config.grid1_master_f
     request_restart = ib_NIOS.wapi_request('POST', object_type = ref + "?_function=requestrestartservicestatus", grid_vip=master_ip)
     restart = ib_NIOS.wapi_request('POST', object_type = ref + "?_function=restartservices", grid_vip=master_ip)
 
-    sleep(180)
+    #sleep(180)
     # Delete Network
 
     # Delete and Disable Networks
