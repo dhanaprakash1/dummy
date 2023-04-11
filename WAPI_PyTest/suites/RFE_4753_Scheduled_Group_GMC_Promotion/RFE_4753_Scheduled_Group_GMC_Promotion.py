@@ -340,13 +340,13 @@ def promote_master_new(IP):
         #child1.sendline('\n')
         child1.expect('y or n')
 
-        child1.sendline('y\n')
+ 	child1.sendline('y\n')
 
-        child1.expect('y or n')
-        child1.sendline('y\n')
+        #child1.expect('y or n')
+        #child1.sendline('y\n')
 
-        child1.expect('y or n')
-        child1.sendline('y\n')
+        #child1.expect('y or n')
+        #child1.sendline('y\n')
 
        #offline members
 	#child1.expect('y or n')
