@@ -334,36 +334,41 @@ def promote_master_new(IP):
         child1.sendline('infoblox')
         child1.expect('Infoblox >')
         child1.sendline('set promote_master')
- 
+	child1.expect('y or n')
+        child1.sendline('y')
+        #child1.expect('Default: 30s')
+        #child1.sendline('\n')
+        child1.expect('y or n')
+
+        child1.sendline('y\n')
+
+        child1.expect('y or n')
+        child1.sendline('y\n')
+
+        child1.expect('y or n')
+        child1.sendline('y\n')
+
        #offline members
 	#child1.expect('y or n')
         #child1.sendline('y')
 
 	#disaster recovery
-	child1.expect('y or n')
-        child1.sendline('y')
+	#child1.expect('y or n')
+        #child1.sendline('y\n')
 
         # scheduled time expired
         #child1.expect('y or n')
         #child1.sendline('y')
         
         # will come grid master
-        child1.expect('y or n')
-        child1.sendline('y')
+        #child1.expect('y or n')
+        #child1.sendline('y\n')
 
-        child1.expect('Default: 30s')
-        child1.sendline('\n')
-        child1.expect('y or n')
+        #child1.expect('Default: 30s')
+        #child1.sendline('\n')
+        #child1.expect('y or n')
 
-        child1.sendline('y\n')
-
-        child1.expect('y or n')
-        child1.sendline('y\n')
-
-        child1.expect('y or n')
-        child1.sendline('y\n')
-
-        sleep(120)
+        #sleep(120)
         output = child1.before
         print_and_log(output)
         check_able_to_login_appliances(IP)
