@@ -1714,7 +1714,7 @@ class RFE_4753_Scheduled_Group_GMC_Promotion(unittest.TestCase):
                 #member_fqdn = "ib-10-35-112-3.infoblox.com"
                 #member_vip = "10.35.112.3" 
                 master_vip = config.grid1_member5_vip
-                member_fqdn = config.grid1_member5_fqdn
+                member_fqdn = config.grid1_master_fqdn
                 member_vip = config.grid_vip
                 GMC_promote_member_as_master_candidate(master_vip, member_fqdn)
                 promote_master(member_vip)
