@@ -534,6 +534,31 @@ def is_grid_alive(grid=config.grid_vip):
     else:
         return True
 
+def check_able_to_login_appliances(ip):
+
+    for i in range(5):
+        try:
+            child = pexpect.spawn('ssh -o StrictHostKeyChecking=no admin@'+ip)
+            child.logfile=sys.stdout
+            child.expect('password:')
+            child.sendline('infoblox')
+            child.expect('Infoblox >')
+            child.close()
+            print("\n************Appliances is Working************\n ")
+            sleep(120)
+            assert True
+            break
+
+        except Exception as e:
+            child.close()
+            print(e)
+            sleep(120)
+            continue
+
+            print("Failure: Appliances did not comeup(vm didn't comeup)")
+
+            assert False
+
 
 def get_restart_time_from_cli(protocol,grid=config.grid_vip,user='admin',password='infoblox'):
     #remove_known_hosts_file()
@@ -1672,8 +1697,8 @@ class RFE_4753_Scheduled_Group_GMC_Promotion(unittest.TestCase):
 		#member_fqdn = "ib-10-35-157-14.infoblox.com"
 		#member_vip = "10.35.157.14" 
 		master_vip = config.grid_vip
-		member_fqdn = config.grid_member3_fqdn
-		member_vip = config.grid_member3_vip
+		member_fqdn = config.grid1_member5_fqdn
+		member_vip = config.grid1_member5_vip
 		GMC_promote_member_as_master_candidate(master_vip, member_fqdn)
 		promote_master(member_vip)
 		check_able_to_login_appliances(member_vip)
@@ -1688,8 +1713,8 @@ class RFE_4753_Scheduled_Group_GMC_Promotion(unittest.TestCase):
                 #master_vip = "10.35.135.10"
                 #member_fqdn = "ib-10-35-112-3.infoblox.com"
                 #member_vip = "10.35.112.3" 
-                master_vip = config.grid_member3_vip
-                member_fqdn = config.grid_member_fqdn
+                master_vip = config.grid1_member5_vip
+                member_fqdn = config.grid1_member5_fqdn
                 member_vip = config.grid_vip
                 GMC_promote_member_as_master_candidate(master_vip, member_fqdn)
                 promote_master(member_vip)
