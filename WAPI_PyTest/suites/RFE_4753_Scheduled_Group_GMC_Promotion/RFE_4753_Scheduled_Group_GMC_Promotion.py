@@ -188,17 +188,17 @@ def Deactivate_GMC_Schedule(master_ip=config.grid_vip):
                 assert activate_status_gmcschedule == False
 		print_and_log("*********** Function Execution Completed **********")
 
-def Update_SCHEDULED_TIME_and_GMC_PROMOTION_POLICY_to_GMC_Group(group_ref, schedule_time, gmc_promotion_policy):
+def Update_SCHEDULED_TIME_and_GMC_PROMOTION_POLICY_to_GMC_Group(group_ref, schedule_time, gmc_promotion_policy, master_ip=config.grid_vip):
                 print_and_log("\n********** Function: Validate Updation of Scheduled Time and GMC Promotion Policy to GMC Group **********")
                 #data = {"scheduled_time": 1675772044,"gmc_promotion_policy":"SEQUENTIALLY"}
                 data = {"scheduled_time": schedule_time, "gmc_promotion_policy": gmc_promotion_policy}
-                get_data = ib_NIOS.wapi_request('PUT', object_type=""+group_ref, fields=json.dumps(data))
+                get_data = ib_NIOS.wapi_request('PUT', object_type=""+group_ref, fields=json.dumps(data), grid_vip=master_ip)
                 print_and_log(get_data)
                 res = json.loads(get_data)
                 print_and_log(res)
                 #assert res == group_ref
                 # Validate gmcpromotion and Scheduled Time is added to gp1 group [EXPECTED to FAIL as we have a bug]
-                get_data = ib_NIOS.wapi_request('GET', object_type=""+group_ref+"?_return_fields=name,comment,gmc_promotion_policy,scheduled_time,members,time_zone")
+                get_data = ib_NIOS.wapi_request('GET', object_type=""+group_ref+"?_return_fields=name,comment,gmc_promotion_policy,scheduled_time,members,time_zone", grid_vip=master_ip)
                 print_and_log(get_data)
                 res = json.loads(get_data)
                 print_and_log(res)
@@ -208,7 +208,6 @@ def Update_SCHEDULED_TIME_and_GMC_PROMOTION_POLICY_to_GMC_Group(group_ref, sched
                 print_and_log("gmc_promotion_policy is " + gmc_promotion_policy + " scheduled_time is " + str(scheduled_time)) 
 		assert gmc_promotion_policy == data["gmc_promotion_policy"] and scheduled_time == data["scheduled_time"]
                 print_and_log("*********** Function Execution Completed **********")
-
                 # Validat5 member is added to gp1 group
 		print_and_log("Current Grid master vip is " + config.grid_vip)
                 get_data = ib_NIOS.wapi_request('GET', object_type=""+group_ref+"?_return_fields=name,comment,gmc_promotion_policy,scheduled_time,members,time_zone", grid_vip=master_ip)
