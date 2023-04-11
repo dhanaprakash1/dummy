@@ -91,53 +91,53 @@ def Get_GroupRef_DefaultGroup():
 	group_ref = res[0]["_ref"]
         global group_ref
 
-def Create_GMC_Group(group_name):
+def Create_GMC_Group(group_name, master_ip=config.grid_vip):
         print_and_log("\n********** Function: Create_GMC_Group **********")
         data = {"name":group_name}
-        get_data = ib_NIOS.wapi_request('POST', object_type="gmcgroup", fields=json.dumps(data))
+        get_data = ib_NIOS.wapi_request('POST', object_type="gmcgroup", fields=json.dumps(data), grid_vip=master_ip)
         print_and_log(get_data)
         group_ref = json.loads(get_data)
         print_and_log(group_ref)
         return group_ref
 
-def Delete_GMC_Group(group_ref):
+def Delete_GMC_Group(group_ref, master_ip=config.grid_vip):
         	print_and_log("\n********** Validate Deletion of GMC Group **********")
-                get_data = ib_NIOS.wapi_request('DELETE', object_type=""+group_ref)
+                get_data = ib_NIOS.wapi_request('DELETE', object_type=""+group_ref, grid_vip=master_ip)
                 print_and_log(get_data)
                 res = json.loads(get_data)
                 print_and_log(res)
                 assert res == group_ref
 
 
-def Add_Members_to_GMC_Group(group_ref, data):
+def Add_Members_to_GMC_Group(group_ref, data, master_ip=config.grid_vip):
                 print_and_log("\n********** Function: Validate Addition of Members to GMC Group **********")
                 #member_name = "vm-sa1.infoblox.com"
                 #member_name = config.grid1_member2_fqdn
                 #data =  {"members":[{"member": member_name}]}
                 #data = {"members":[{"member":"vm-sa1.infoblox.com"}]}
                 print_and_log("member data :"+ str(data))
-                get_data = ib_NIOS.wapi_request('PUT', object_type=""+group_ref, fields=json.dumps(data))
+                get_data = ib_NIOS.wapi_request('PUT', object_type=""+group_ref, fields=json.dumps(data), grid_vip=master_ip)
                 print_and_log(get_data)
                 res = json.loads(get_data)
                 print_and_log(res)
                 #assert res == group_ref_gp1
                 # Validate member is added to gp1 group
-                get_data = ib_NIOS.wapi_request('GET', object_type=""+group_ref+"?_return_fields=name,comment,gmc_promotion_policy,scheduled_time,members,time_zone")
+                get_data = ib_NIOS.wapi_request('GET', object_type=""+group_ref+"?_return_fields=name,comment,gmc_promotion_policy,scheduled_time,members,time_zone", grid_vip=master_ip)
                 print_and_log(get_data)
                 res = json.loads(get_data)
                 print_and_log(res)
                 count = len(res["members"])
                 #ToDo: Validate list of members
-                print_and_log("Number of memebrs in group : " + str(count))
+                print_and_log("Number of members in group : " + str(count))
                 #validate member count in group matches the member count in data
 		assert count == len(data["members"])
                 #ToDo: Validate member is moved out of default group as it is moved to new group
 
-def join_now(group_name):
+def join_now(group_name, master_ip=config.grid_vip):
                 print_and_log("\n********** Function: join now **********")
                 data = {"gmc_group_name": group_name}
                 print_and_log("data :"+ str(data))
-                get_data = ib_NIOS.wapi_request('POST', object_type="gmcgroup?_function=reconnect_group_now", fields=json.dumps(data))
+                get_data = ib_NIOS.wapi_request('POST', object_type="gmcgroup?_function=reconnect_group_now", fields=json.dumps(data), grid_vip=master_ip)
                 print_and_log(get_data)
                 res = json.loads(get_data)
                 print_and_log(res)
@@ -174,7 +174,7 @@ def Deactivate_GMC_Schedule(master_ip=config.grid_vip):
                 print_and_log("\nFunction: ********** Deactivating GMC Schedule **********")
                 #Deactivate schedule to bring back to base state
                 data = {"activate_gmc_group_schedule": False}
-                get_data = ib_NIOS.wapi_request('PUT', object_type="gmcschedule/"+group_schedule_ref, fields=json.dumps(data))
+                get_data = ib_NIOS.wapi_request('PUT', object_type="gmcschedule/"+group_schedule_ref, fields=json.dumps(data), grid_vip=master_ip)
                 print_and_log(get_data)
                 res = json.loads(get_data)
                 print_and_log(res)
@@ -1882,7 +1882,7 @@ class RFE_4753_Scheduled_Group_GMC_Promotion(unittest.TestCase):
         @pytest.mark.run(order=34)
         def test_034_Validate_GMCSchedule_Deactivated_after_promotion_After_Promotion(self):
                 #Validate schedule status
-                assert Get_GMC_Schedule_Activation_Status() == False
+                assert Get_GMC_Schedule_Activation_Status(config.grid1_member5_vip) == False
 
 
         @pytest.mark.run(order=35)
@@ -1930,16 +1930,20 @@ class RFE_4753_Scheduled_Group_GMC_Promotion(unittest.TestCase):
                 #config.grid1_member2_fqdn = "ib-10-35-193-14.infoblox.com"
                 #config.grid1_member3_fqdn = "ib-10-34-19-254.infoblox.com"
                 #config.grid1_member4_fqdn = "ib-offline.infoblox.com"
+                
+		Deactivate_GMC_Schedule(config.grid1_member5_vip)
+                Delete_GMC_Group(group_ref_gp1, config.grid1_member5_vip)
+                Delete_GMC_Group(group_ref_gp2, config.grid1_member5_vip)   
 
-                group_ref_gp1 = Creatend_log_GMC_Group("gp1") #uncomment this
+                group_ref_gp1 = Create_GMC_Group("gp1", config.grid1_member5_vip) #uncomment this
                 data_gp1 = {"members":[{"member":config.grid1_member1_fqdn}, {"member":config.grid1_member2_fqdn}]}
                 #data_gp1_json = json.dumps(data_gp1)
                 print_and_log("Data is " + str(data_gp1))
-                Add_Members_to_GMC_Group(group_ref_gp1, data_gp1)
+                Add_Members_to_GMC_Group(group_ref_gp1, data_gp1, config.grid1_member5_vip)
                 # Create Group gp2
-                group_ref_gp2 = Create_GMC_Group("gp2") #uncomment this
+                group_ref_gp2 = Create_GMC_Group("gp2", config.grid1_member5_vip) #uncomment this
                 data_gp2 = {"members":[{"member":config.grid1_member3_fqdn}, {"member":config.grid1_member4_fqdn}]}
-                Add_Members_to_GMC_Group(group_ref_gp2, data_gp2)
+                Add_Members_to_GMC_Group(group_ref_gp2, data_gp2, config.grid1_member5_vip)
 
                 current_epoch_time = get_current_epoch_time()
                 print_and_log("current time is " + str(current_epoch_time))
@@ -1947,17 +1951,17 @@ class RFE_4753_Scheduled_Group_GMC_Promotion(unittest.TestCase):
                 #set schedule time for gp1 
                 schedule_group_time_gp1 = add_minutes_to_epoch_time(current_epoch_time, 10)
                 print_and_log("current time + 10 minutes is " + str(schedule_group_time_gp1))
-                Update_SCHEDULED_TIME_and_GMC_PROMOTION_POLICY_to_GMC_Group(group_ref_gp1,schedule_group_time_gp1,"SEQUENTIALLY")
+                Update_SCHEDULED_TIME_and_GMC_PROMOTION_POLICY_to_GMC_Group(group_ref_gp1,schedule_group_time_gp1,"SEQUENTIALLY", config.grid1_member5_vip)
 
                 #set schedule time for gp2 
                 schedule_group_time_gp2 = add_minutes_to_epoch_time(current_epoch_time, 15)
                 print_and_log("current time + 15 minutes is " + str(schedule_group_time_gp2))
-                Update_SCHEDULED_TIME_and_GMC_PROMOTION_POLICY_to_GMC_Group(group_ref_gp2,schedule_group_time_gp2,"SIMULTANEOUSLY")
+                Update_SCHEDULED_TIME_and_GMC_PROMOTION_POLICY_to_GMC_Group(group_ref_gp2,schedule_group_time_gp2,"SIMULTANEOUSLY", config.grid1_member5_vip)
 
         @pytest.mark.run(order=45)
 	def test_045_Test_Scheduled_GMC_Promotion(self):
                 # Activate GMC group schedule
-                Activate_GMC_Schedule()
+                Activate_GMC_Schedule(config.grid1_member5_vip)
 
                 #config.grid_vip = "10.35.135.10"
                 #config.member5_fqdn = "ib-10-35-112-3.infoblox.com"
@@ -1970,7 +1974,7 @@ class RFE_4753_Scheduled_Group_GMC_Promotion(unittest.TestCase):
                 #GMC_promote_member_as_master_candidate(master_vip, member_fqdn)
                 Poweroff_the_member(config.grid1_member5_id)
 		promote_master_new(member_vip)
-                join_now(group_ref_gp2)
+                join_now(group_ref_gp2, config.grid1_member5_vip)
                 check_able_to_login_appliances(member_vip)
                 validate_status_GM_after_GMC_promotion(member_vip)
 """
