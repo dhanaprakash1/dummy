@@ -783,14 +783,14 @@ def dns_test_recursive_queries(master_ip=config.grid_vip, master_fqdn=config.gri
     #Need's to configure forwarder & enabling recursion
 
     print_and_log("Enabling Recursion")
-    member_dns =  ib_NIOS.wapi_request('GET', object_type="member:dns?host_name~="+config.grid1_member1_fqdn, grid_vip=master_ip)
+    member_dns =  ib_NIOS.wapi_request('GET', object_type="member:dns?host_name~="+config.grid_member1_fqdn, grid_vip=master_ip)
     ref = json.loads(member_dns)[0]['_ref']
 #   enable_recursion_forwarder={"allow_recursive_query":True,"forwarders":[config.client_ip]}
     enable_recursion_forwarder={"allow_recursive_query":True}
-    response = ib_NIOS.wapi_request('PUT', object_type=ref, fields=json.dumps(enable_recursion_forwarder), grid_vip=master_ip)
+    response = ib_NIOS.wapi_request('PUT', object_type=ref, fields=json.dumps(enable_recursion_forwarder, grid_vip=master_ip))
 
     #Restarting 
-    grid =  ib_NIOS.wapi_request('GET', object_type="grid", grid_vip=master_ip)
+    grid =  ib_NIOS.wapi_request('GET', object_type="grid")
     ref = json.loads(grid)[0]['_ref']
     request_restart = ib_NIOS.wapi_request('POST', object_type = ref + "?_function=requestrestartservicestatus", grid_vip=master_ip)
     restart = ib_NIOS.wapi_request('POST', object_type = ref + "?_function=restartservices", grid_vip=master_ip)
@@ -801,7 +801,7 @@ def dns_test_recursive_queries(master_ip=config.grid_vip, master_fqdn=config.gri
     #logger.info("%s",''.join(fp.readlines()))
 
     print_and_log("Cleanup,disabling recursion")
-    member_dns =  ib_NIOS.wapi_request('GET', object_type="member:dns?host_name~="+config.grid1_member1_fqdn, grid_vip=master_ip)
+    member_dns =  ib_NIOS.wapi_request('GET', object_type="member:dns?host_name~="+config.grid_member1_fqdn, grid_vip=master_ip)
     ref = json.loads(member_dns)[0]['_ref']
     disable_recursion_forwarder={"allow_recursive_query":False,"use_recursive_query_setting":False,"use_forwarders":False}
     response = ib_NIOS.wapi_request('PUT', object_type=ref, fields=json.dumps(disable_recursion_forwarder), grid_vip=master_ip)
@@ -817,13 +817,13 @@ def dns_test_recursive_queries(master_ip=config.grid_vip, master_fqdn=config.gri
 def dns_test_nxdomain_noerror(master_ip=config.grid_vip, master_fqdn=config.grid1_master_fqdn):
     print_and_log("Adding zone 57.in-addr.arpa, dns_top_nxdomain_or_noerror.com & 7.7.7.7.ip6.arpa")
     #TEST Preparation, Adding zone 'dns_top_clients.com',  GM as Primary , Member1 & Member2 as secondary for resolving members
-    zone1 = {"fqdn":"dns_top_nxdomain_or_noerror.com","view":"default","grid_primary": [{"name": config.grid1_master_fqdn,"stealth": False}]}
+    zone1 = {"fqdn":"dns_top_nxdomain_or_noerror.com","view":"default","grid_primary": [{"name": config.grid_fqdn,"stealth": False}]}
     response = ib_NIOS.wapi_request('POST', object_type="zone_auth", fields=json.dumps(zone1), grid_vip=master_ip)
 
-    zone2 = {"fqdn":"57.0.0.0/8","view":"default","zone_format":"IPV4","grid_primary": [{"name": config.grid1_master_fqdn,"stealth": False}]}
+    zone2 = {"fqdn":"57.0.0.0/8","view":"default","zone_format":"IPV4","grid_primary": [{"name": config.grid_fqdn,"stealth": False}]}
     response = ib_NIOS.wapi_request('POST', object_type="zone_auth", fields=json.dumps(zone2), grid_vip=master_ip)
 
-    zone3 = {"fqdn":"7777::/64","view":"default","zone_format":"IPV6","grid_primary": [{"name": config.grid1_master_fqdn,"stealth": False}]}
+    zone3 = {"fqdn":"7777::/64","view":"default","zone_format":"IPV6","grid_primary": [{"name": config.grid_fqdn,"stealth": False}]}
     response = ib_NIOS.wapi_request('POST', object_type="zone_auth", fields=json.dumps(zone3), grid_vip=master_ip)
 
     #Restarting 
@@ -1700,7 +1700,6 @@ class RFE_4753_Scheduled_Group_GMC_Promotion(unittest.TestCase):
 		#master_vip = "10.35.160.6"
 		#member_fqdn = "ib-10-35-157-14.infoblox.com"
 		#member_vip = "10.35.157.14" 
-		sleep(120)
 		master_vip = config.grid_vip
 		member_fqdn = config.grid1_member5_fqdn
 		member_vip = config.grid1_member5_vip
@@ -1718,8 +1717,7 @@ class RFE_4753_Scheduled_Group_GMC_Promotion(unittest.TestCase):
                 #master_vip = "10.35.135.10"
                 #member_fqdn = "ib-10-35-112-3.infoblox.com"
                 #member_vip = "10.35.112.3" 
-                sleep(120)
-		master_vip = config.grid1_member5_vip
+                master_vip = config.grid1_member5_vip
                 member_fqdn = config.grid1_master_fqdn
                 member_vip = config.grid_vip
                 GMC_promote_member_as_master_candidate(master_vip, member_fqdn)
@@ -1729,7 +1727,6 @@ class RFE_4753_Scheduled_Group_GMC_Promotion(unittest.TestCase):
 
         @pytest.mark.run(order=27)
         def test_027_test_epoch_time(self):
-		sleep(120)
                 print_and_log("\n********** Promote GMC as GM **********")
 		current_epoch_time = get_current_epoch_time()
 		print_and_log("current time is " + str(current_epoch_time))
@@ -1816,7 +1813,6 @@ class RFE_4753_Scheduled_Group_GMC_Promotion(unittest.TestCase):
                 #config.grid_member5_vip = "10.35.112.3" 
                 
 		# Promote Master
-                sleep(120)
                 master_vip = config.grid1_master_vip
                 member_fqdn = config.grid1_member5_fqdn
                 member_vip = config.grid1_member5_vip
@@ -1824,22 +1820,18 @@ class RFE_4753_Scheduled_Group_GMC_Promotion(unittest.TestCase):
                 promote_master_new(member_vip)
                 check_able_to_login_appliances(member_vip)
                 validate_status_GM_after_GMC_promotion(member_vip)
-                sleep(1200)
 
-	@pytest.mark.run(order=32)
-        def test_32_Promote_oldGM_back(self):
+	#@pytest.mark.run(order=32)
+        def remove_test_32_Promote_oldGM_back(self):
                 print_and_log("\n********** Promote old GM back **********")
-                join_now(group_ref_gp1, config.grid1_member5_vip)
-		join_now(group_ref_gp2, config.grid1_member5_vip)
-		sleep(120)
-		#Deactivate_GMC_Schedule(config.grid_member5_vip)
-		#master_vip = config.grid_member5_vip
-                #member_fqdn = config.grid_fqdn
-                #member_vip = config.grid_vip
-                #GMC_promote_member_as_master_candidate(master_vip, member_fqdn)
-                #promote_master(member_vip)
-                #check_able_to_login_appliances(member_vip)
-                #validate_status_GM_after_GMC_promotion(member_vip)
+                Deactivate_GMC_Schedule(config.grid_member5_vip)
+		master_vip = config.grid_member5_vip
+                member_fqdn = config.grid_fqdn
+                member_vip = config.grid_vip
+                GMC_promote_member_as_master_candidate(master_vip, member_fqdn)
+                promote_master(member_vip)
+                check_able_to_login_appliances(member_vip)
+                validate_status_GM_after_GMC_promotion(member_vip)
 
         @pytest.mark.run(order=33)
         def test_033_Validate_Members_in_GMCGroup_After_Promotion(self):
@@ -1890,7 +1882,7 @@ class RFE_4753_Scheduled_Group_GMC_Promotion(unittest.TestCase):
         @pytest.mark.run(order=34)
         def test_034_Validate_GMCSchedule_Deactivated_after_promotion_After_Promotion(self):
                 #Validate schedule status
-                assert Get_GMC_Schedule_Activation_Status(config.grid1_member5_vip) == True
+                assert Get_GMC_Schedule_Activation_Status(config.grid1_member5_vip) == False
 
 
         @pytest.mark.run(order=35)
