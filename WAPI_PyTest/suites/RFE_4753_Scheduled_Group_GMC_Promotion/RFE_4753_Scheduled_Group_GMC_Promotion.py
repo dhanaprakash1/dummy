@@ -1557,8 +1557,8 @@ class RFE_4753_Scheduled_Group_GMC_Promotion(unittest.TestCase):
                 print_and_log(res)
                 errortext1 = get_data[1]
                 print_and_log(errortext1)
-                assert re.search(r"Not Authorized", errortext1)
-                #assert res == "gmcschedule/"+group_schedule_ref
+                assert re.search(r"Only superusers are allowed to perform this operation on GMC Groups", errortext1)
+		#assert res == "gmcschedule/"+group_schedule_ref
                 # Validate GMC schedule is active
                 get_data = ib_NIOS.wapi_request('GET', object_type="gmcschedule/"+group_schedule_ref+"?_return_fields=activate_gmc_group_schedule,gmc_groups")
                 print_and_log(get_data)
@@ -1595,7 +1595,7 @@ class RFE_4753_Scheduled_Group_GMC_Promotion(unittest.TestCase):
         	#get_ref = ib_NIOS.wapi_request('GET', object_type="member", grid_vip=config.grid_vip)
 		get_ref = ib_NIOS.wapi_request('GET', object_type="member", grid_vip=master_vip)
         	print_and_log(get_ref)
-		ref1 = json.loads(get_ref)[1]['_ref']
+		ref1 = json.loads(get_ref)[5]['_ref'] # ref for member5
 		print_and_log("grid_member 1 ref is " + ref1)
 		# make member 5 master candidate
                 member_vip = config.grid1_member5_fqdn
@@ -1705,7 +1705,7 @@ class RFE_4753_Scheduled_Group_GMC_Promotion(unittest.TestCase):
 		member_fqdn = config.grid1_member5_fqdn
 		member_vip = config.grid1_member5_vip
 		GMC_promote_member_as_master_candidate(master_vip, member_fqdn)
-		sleep(300)
+		#sleep(120)
 		promote_master(member_vip)
 		check_able_to_login_appliances(member_vip)
 		validate_status_GM_after_GMC_promotion(member_vip)
@@ -1824,13 +1824,14 @@ class RFE_4753_Scheduled_Group_GMC_Promotion(unittest.TestCase):
                 member_fqdn = config.grid1_member5_fqdn
                 member_vip = config.grid1_member5_vip
                 GMC_promote_member_as_master_candidate(master_vip, member_fqdn)
-                promote_master_new(member_vip)
+                sleep(180)
+		promote_master_new(member_vip)
                 check_able_to_login_appliances(member_vip)
                 validate_status_GM_after_GMC_promotion(member_vip)
                 sleep(1200)
 
 	@pytest.mark.run(order=32)
-        def test_32_Promote_oldGM_back(self):
+        def test_032_Promote_oldGM_back(self):
                 print_and_log("\n********** Promote old GM back **********")
                 join_now(group_ref_gp1, config.grid1_member5_vip)
 		join_now(group_ref_gp2, config.grid1_member5_vip)
