@@ -918,10 +918,10 @@ def dhcp_test_fingerprint(master_ip=config.grid_vip, master_fqdn=config.grid1_ma
     response = ib_NIOS.wapi_request('POST', object_type="networkview", fields=json.dumps(network_view), grid_vip=master_ip)
     print(response)
     # Add Network
-    data = {"members":[{"_struct": "dhcpmember", "ipv4addr":config.grid1_member3_vip,"name":config.grid1_member3_fqdn}], \
-     "network": "10.0.0.0/8", "network_view": "network_view_dhcp"}
-    response = ib_NIOS.wapi_request('POST', object_type="network", fields=json.dumps(data), grid_vip=master_ip)
-    print(response)
+    #data = {"members":[{"_struct": "dhcpmember", "ipv4addr":config.grid1_member3_vip,"name":config.grid1_member3_fqdn}], \
+    # "network": "10.0.0.0/8", "network_view": "network_view_dhcp"}
+    #response = ib_NIOS.wapi_request('POST', object_type="network", fields=json.dumps(data), grid_vip=master_ip)
+    #print(response)
     data = {"members":[{"_struct": "dhcpmember", "ipv4addr":config.grid1_member3_vip,"name":config.grid1_member3_fqdn}], \
      "network": "51.0.0.0/24", "network_view": "network_view_dhcp"}
     response = ib_NIOS.wapi_request('POST', object_type="network", fields=json.dumps(data), grid_vip=master_ip)
@@ -1700,7 +1700,7 @@ class RFE_4753_Scheduled_Group_GMC_Promotion(unittest.TestCase):
 		#master_vip = "10.35.160.6"
 		#member_fqdn = "ib-10-35-157-14.infoblox.com"
 		#member_vip = "10.35.157.14" 
-		sleep(120)
+		sleep(300)
 		master_vip = config.grid_vip
 		member_fqdn = config.grid1_member5_fqdn
 		member_vip = config.grid1_member5_vip
@@ -1708,6 +1708,7 @@ class RFE_4753_Scheduled_Group_GMC_Promotion(unittest.TestCase):
 		promote_master(member_vip)
 		check_able_to_login_appliances(member_vip)
 		validate_status_GM_after_GMC_promotion(member_vip)
+		sleep(600)
 
         @pytest.mark.run(order=26)
         def test_026_Promote_oldGM_back(self):
@@ -1718,7 +1719,7 @@ class RFE_4753_Scheduled_Group_GMC_Promotion(unittest.TestCase):
                 #master_vip = "10.35.135.10"
                 #member_fqdn = "ib-10-35-112-3.infoblox.com"
                 #member_vip = "10.35.112.3" 
-                sleep(120)
+                #sleep(600)
 		master_vip = config.grid1_member5_vip
                 member_fqdn = config.grid1_master_fqdn
                 member_vip = config.grid_vip
@@ -1726,10 +1727,11 @@ class RFE_4753_Scheduled_Group_GMC_Promotion(unittest.TestCase):
                 promote_master(member_vip)
                 check_able_to_login_appliances(member_vip)
                 validate_status_GM_after_GMC_promotion(member_vip)
+                sleep(600)
 
         @pytest.mark.run(order=27)
         def test_027_test_epoch_time(self):
-		sleep(120)
+		#sleep(620)
                 print_and_log("\n********** Promote GMC as GM **********")
 		current_epoch_time = get_current_epoch_time()
 		print_and_log("current time is " + str(current_epoch_time))
@@ -1831,7 +1833,7 @@ class RFE_4753_Scheduled_Group_GMC_Promotion(unittest.TestCase):
                 print_and_log("\n********** Promote old GM back **********")
                 join_now(group_ref_gp1, config.grid1_member5_vip)
 		join_now(group_ref_gp2, config.grid1_member5_vip)
-		sleep(120)
+		sleep(600)
 		#Deactivate_GMC_Schedule(config.grid_member5_vip)
 		#master_vip = config.grid_member5_vip
                 #member_fqdn = config.grid_fqdn
@@ -1928,7 +1930,7 @@ class RFE_4753_Scheduled_Group_GMC_Promotion(unittest.TestCase):
         @pytest.mark.run(order=43)
         def test_043_restore(self):
                 grid_restore(config.grid1_member5_vip)
-
+                sleep(600)
 
         @pytest.mark.run(order=44)
         def test_044_Test_Setting_Schedule_for_GMC_Promotion(self):
