@@ -1700,11 +1700,12 @@ class RFE_4753_Scheduled_Group_GMC_Promotion(unittest.TestCase):
 		#master_vip = "10.35.160.6"
 		#member_fqdn = "ib-10-35-157-14.infoblox.com"
 		#member_vip = "10.35.157.14" 
-		sleep(300)
+		sleep(120)
 		master_vip = config.grid_vip
 		member_fqdn = config.grid1_member5_fqdn
 		member_vip = config.grid1_member5_vip
 		GMC_promote_member_as_master_candidate(master_vip, member_fqdn)
+		sleep(300)
 		promote_master(member_vip)
 		check_able_to_login_appliances(member_vip)
 		validate_status_GM_after_GMC_promotion(member_vip)
