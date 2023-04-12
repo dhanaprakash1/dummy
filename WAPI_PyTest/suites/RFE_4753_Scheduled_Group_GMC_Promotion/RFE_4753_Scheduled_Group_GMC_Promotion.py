@@ -24,16 +24,16 @@ import paramiko
 from ib_utils.common_utilities import generate_token_from_file
 
 #Variables
-group_ref_Default = "gmcgroup/b25lLmdtY19ncm91cCREZWZhdWx0:Default"; global group_ref_Default
-group_ref_gp1 = "gmcgroup/b25lLmdtY19ncm91cCRncDE:gp1"; global group_ref_gp1
-group_ref_gp2 = "gmcgroup/b25lLmdtY19ncm91cCRncDI:gp2"; global group_ref_gp2
-group_schedule_ref = "b25lLmdtY19zY2hlZHVsZV9ncm91cCQw"; global group_schedule_ref
+global group_ref_Default; group_ref_Default = "gmcgroup/b25lLmdtY19ncm91cCREZWZhdWx0:Default"
+global group_ref_gp1; group_ref_gp1 = "gmcgroup/b25lLmdtY19ncm91cCRncDE:gp1"
+global group_ref_gp2; group_ref_gp2 = "gmcgroup/b25lLmdtY19ncm91cCRncDI:gp2"
+global group_schedule_ref; group_schedule_ref = "b25lLmdtY19zY2hlZHVsZV9ncm91cCQw"
 current_epoch_time = 0; global current_epoch_time
 
-non_super_user_group1_name = "non_super_group1"; global non_super_user_group1_name
+global non_super_user_group1_name; non_super_user_group1_name = "non_super_group1"
 global non_super_user_group1_ref
-non_super_user_group1_username1 = "ns_group1_user1"; global non_super_user_group1_username1
-non_super_user_group1_password1 = "infoblox"; global non_super_user_group1_password1
+global non_super_user_group1_username1; non_super_user_group1_username1 = "ns_group1_user1"
+global non_super_user_group1_password1; non_super_user_group1_password1 = "infoblox"
 global non_super_user_group1_username1_ref
 global schedule_group_time_gp1
 global schedule_group_time_gp2
@@ -1941,17 +1941,17 @@ class RFE_4753_Scheduled_Group_GMC_Promotion(unittest.TestCase):
                 #config.grid1_member3_fqdn = "ib-10-34-19-254.infoblox.com"
                 #config.grid1_member4_fqdn = "ib-offline.infoblox.com"
                 
-		Deactivate_GMC_Schedule(config.grid1_member5_vip)
-                Delete_GMC_Group(group_ref_gp1, config.grid1_member5_vip)
-                Delete_GMC_Group(group_ref_gp2, config.grid1_member5_vip)   
+		#Deactivate_GMC_Schedule(config.grid1_member5_vip)
+                #Delete_GMC_Group(group_ref_gp1, config.grid1_member5_vip)
+                #Delete_GMC_Group(group_ref_gp2, config.grid1_member5_vip)   
 
-                group_ref_gp1 = Create_GMC_Group("gp1", config.grid1_member5_vip) #uncomment this
+                #group_ref_gp1 = Create_GMC_Group("gp1", config.grid1_member5_vip) #uncomment this
                 data_gp1 = {"members":[{"member":config.grid1_member1_fqdn}, {"member":config.grid1_member2_fqdn}]}
                 #data_gp1_json = json.dumps(data_gp1)
                 print_and_log("Data is " + str(data_gp1))
                 Add_Members_to_GMC_Group(group_ref_gp1, data_gp1, config.grid1_member5_vip)
                 # Create Group gp2
-                group_ref_gp2 = Create_GMC_Group("gp2", config.grid1_member5_vip) #uncomment this
+                #group_ref_gp2 = Create_GMC_Group("gp2", config.grid1_member5_vip) #uncomment this
                 data_gp2 = {"members":[{"member":config.grid1_member3_fqdn}, {"member":config.grid1_member4_fqdn}]}
                 Add_Members_to_GMC_Group(group_ref_gp2, data_gp2, config.grid1_member5_vip)
 
@@ -1971,21 +1971,24 @@ class RFE_4753_Scheduled_Group_GMC_Promotion(unittest.TestCase):
         @pytest.mark.run(order=45)
 	def test_045_Test_Scheduled_GMC_Promotion(self):
                 # Activate GMC group schedule
-                Activate_GMC_Schedule(config.grid1_member5_vip)
+                #Activate_GMC_Schedule(config.grid1_member5_vip)
 
                 #config.grid_vip = "10.35.135.10"
                 #config.member5_fqdn = "ib-10-35-112-3.infoblox.com"
                 #config.grid_member5_vip = "10.35.112.3" 
 
                 # Promote Master
-                master_vip = config.member5_fqdn
-                member_fqdn = config.grid_vip
-                member_vip = config.grid_vip
+                master_vip = config.grid1_member5_vip
+                member_fqdn = config.grid1_master_fqdn
+                member_vip = config.grid1_master_vip
                 #GMC_promote_member_as_master_candidate(master_vip, member_fqdn)
-                Poweroff_the_member(config.grid1_member5_id)
+                Poweroff_the_member(config.grid1_member3_id)
+		sleep(60)
 		promote_master_new(member_vip)
-                join_now(group_ref_gp2, config.grid1_member5_vip)
-                check_able_to_login_appliances(member_vip)
+                sleep(1200)
+                join_now(group_ref_gp2, member_vip)
+                sleep(300)
+		check_able_to_login_appliances(member_vip)
                 validate_status_GM_after_GMC_promotion(member_vip)
 """
         @pytest.mark.run(order=138)
