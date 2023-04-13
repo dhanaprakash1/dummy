@@ -204,7 +204,7 @@ def Update_SCHEDULED_TIME_and_GMC_PROMOTION_POLICY_to_GMC_Group(group_ref, sched
                 print_and_log(res)
                 gmc_promotion_policy = res["gmc_promotion_policy"]
                 scheduled_time = res["scheduled_time"]
-		scheduled_time = add_minutes_to_epoch_time(scheduled_time, 8*60) # validate and log a bug
+		#scheduled_time = add_minutes_to_epoch_time(scheduled_time, 8*60) # validate and log a bug
                 print_and_log("gmc_promotion_policy is " + gmc_promotion_policy + " scheduled_time is " + str(scheduled_time)) 
 		assert gmc_promotion_policy == data["gmc_promotion_policy"] and scheduled_time == data["scheduled_time"]
                 print_and_log("*********** Function Execution Completed **********")
