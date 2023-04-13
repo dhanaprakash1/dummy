@@ -619,8 +619,9 @@ def Poweron_the_member(eng_lab_id):
 def get_current_epoch_time():
     print_and_log("Function: get_current_epoch_time")
     current_epoch_time = int(time.time())
-    current_epoch_time_DST = add_minutes_to_epoch_time(current_epoch_time, 60)
-    return current_epoch_time_DST
+    #current_epoch_time_DST = add_minutes_to_epoch_time(current_epoch_time, 60)
+    #return current_epoch_time_DST
+    return current_epoch_time
 
 def add_minutes_to_epoch_time(epoch_time, minutes_to_add):
     print_and_log("Function: add_minutes_to_epoch_time")
@@ -1449,7 +1450,7 @@ class RFE_4753_Scheduled_Group_GMC_Promotion(unittest.TestCase):
                 print_and_log(res)
                 gmc_promotion_policy = res["gmc_promotion_policy"]
                 scheduled_time = res["scheduled_time"]
-		scheduled_time = add_minutes_to_epoch_time(scheduled_time, 8*60) # validate and log a bug
+		#scheduled_time = add_minutes_to_epoch_time(scheduled_time, 8*60) # validate and log a bug
                 print_and_log("gmc_promotion_policy is " + gmc_promotion_policy + "and scheduled_time is " + str(scheduled_time))
                 assert gmc_promotion_policy == data["gmc_promotion_policy"]
 		assert scheduled_time == data["scheduled_time"]
