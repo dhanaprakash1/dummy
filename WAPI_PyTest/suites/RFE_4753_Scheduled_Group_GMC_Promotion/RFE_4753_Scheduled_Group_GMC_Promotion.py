@@ -703,7 +703,7 @@ def grid_restore(master_ip=config.grid_vip):
         response2 = ib_NIOS.wapi_request('POST', object_type="fileop?_function=restoredatabase",fields=json.dumps(data2), grid_vip=master_ip)
         sleep(300)
         logging.info("Validate Syslog afer perform queries")
-        infoblox_log_validation = 'ssh -o StrictHostKeyChecking=no -o BatchMode=yes -o UserKnownHostsFile=/dev/null root@' + str(master_ip) + ' " tail -1200 /infoblox/var/infoblox.log "'
+        infoblox_log_validation = 'ssh -o StrictHostKeyChecking=no -o BatchMode=yes -o UserKnownHostsFile=/dev/null root@' + str(master_ip) + ' " tail -2400 /infoblox/var/infoblox.log "'
         out1 = commands.getoutput(infoblox_log_validation)
         print out1
         logging.info(out1)
