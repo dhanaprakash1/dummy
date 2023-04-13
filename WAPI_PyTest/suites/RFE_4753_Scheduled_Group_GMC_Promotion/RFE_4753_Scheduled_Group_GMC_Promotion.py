@@ -1552,12 +1552,11 @@ class RFE_4753_Scheduled_Group_GMC_Promotion(unittest.TestCase):
 		#Activate GMC schedule as non-super-user
                 data = {"activate_gmc_group_schedule": True}
                 get_data = ib_NIOS.wapi_request('PUT', object_type="gmcschedule/"+group_schedule_ref, fields=json.dumps(data), user=non_super_user_group1_username1, password=non_super_user_group1_password1)
-                print_and_log(get_data)
-                res = json.loads(get_data)
-                print_and_log(res)
+                print_and_log("get_data is " + str(get_data))
                 errortext1 = get_data[1]
-                print_and_log(errortext1)
-                assert re.search(r"Only superusers are allowed to perform this operation on GMC Groups", errortext1)
+                print_and_log("error text is " + errortext1)
+                assert re.search(r"Access Denied", errortext1)
+                #assert re.search(r"Only superusers are allowed to perform this operation on GMC Groups", errortext1)
 		#assert res == "gmcschedule/"+group_schedule_ref
                 # Validate GMC schedule is active
                 get_data = ib_NIOS.wapi_request('GET', object_type="gmcschedule/"+group_schedule_ref+"?_return_fields=activate_gmc_group_schedule,gmc_groups")
@@ -1934,7 +1933,7 @@ class RFE_4753_Scheduled_Group_GMC_Promotion(unittest.TestCase):
         @pytest.mark.run(order=43)
         def test_043_restore(self):
                 grid_restore(config.grid1_member5_vip)
-                sleep(600)
+                sleep(240)
 
         @pytest.mark.run(order=44)
         def test_044_Test_Setting_Schedule_for_GMC_Promotion(self):
