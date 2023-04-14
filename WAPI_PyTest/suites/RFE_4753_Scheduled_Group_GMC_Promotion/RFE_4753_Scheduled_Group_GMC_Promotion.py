@@ -1834,7 +1834,7 @@ class RFE_4753_Scheduled_Group_GMC_Promotion(unittest.TestCase):
 		promote_master_new(member_vip)
                 check_able_to_login_appliances(member_vip)
                 validate_status_GM_after_GMC_promotion(member_vip)
-                sleep(1200)
+                sleep(1500)
 
 	#@pytest.mark.run(order=32)
         def remove_test_032_Promote_oldGM_back(self):
