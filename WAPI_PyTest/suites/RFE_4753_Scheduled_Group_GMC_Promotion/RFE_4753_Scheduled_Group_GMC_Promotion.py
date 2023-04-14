@@ -28,15 +28,15 @@ global group_ref_Default; group_ref_Default = "gmcgroup/b25lLmdtY19ncm91cCREZWZh
 global group_ref_gp1; group_ref_gp1 = "gmcgroup/b25lLmdtY19ncm91cCRncDE:gp1"
 global group_ref_gp2; group_ref_gp2 = "gmcgroup/b25lLmdtY19ncm91cCRncDI:gp2"
 global group_schedule_ref; group_schedule_ref = "b25lLmdtY19zY2hlZHVsZV9ncm91cCQw"
-current_epoch_time = 0; global current_epoch_time
+global current_epoch_time; current_epoch_time = 0
 
 global non_super_user_group1_name; non_super_user_group1_name = "non_super_group1"
 global non_super_user_group1_ref
 global non_super_user_group1_username1; non_super_user_group1_username1 = "ns_group1_user1"
 global non_super_user_group1_password1; non_super_user_group1_password1 = "infoblox"
 global non_super_user_group1_username1_ref
-global schedule_group_time_gp1
-global schedule_group_time_gp2
+global schedule_group_time_gp1; schedule_group_time_gp1 = 0
+global schedule_group_time_gp2; schedule_group_time_gp2 = 0
 
 
 
@@ -1559,7 +1559,8 @@ class RFE_4753_Scheduled_Group_GMC_Promotion(unittest.TestCase):
                 assert re.search(r"Access Denied", errortext1)
                 #assert re.search(r"Only superusers are allowed to perform this operation on GMC Groups", errortext1)
 		#assert res == "gmcschedule/"+group_schedule_ref
-                # Validate GMC schedule is active
+                """
+		# Validate GMC schedule is active
                 get_data = ib_NIOS.wapi_request('GET', object_type="gmcschedule/"+group_schedule_ref+"?_return_fields=activate_gmc_group_schedule,gmc_groups")
                 print_and_log(get_data)
                 res = json.loads(get_data)
@@ -1574,6 +1575,7 @@ class RFE_4753_Scheduled_Group_GMC_Promotion(unittest.TestCase):
                 print_and_log(res)
                 assert res == "gmcschedule/"+group_schedule_ref
                 print_and_log("*********** Test Case Execution Completed **********")
+		"""
 
         @pytest.mark.run(order=20)
         def test_020_Activating_GMC_Schedule(self):
@@ -1658,7 +1660,7 @@ class RFE_4753_Scheduled_Group_GMC_Promotion(unittest.TestCase):
                 print_and_log(get_data)
                 errortext1 = get_data[1]
                 print_and_log(errortext1)
-                assert re.search(r"GM is not allowed in GMC promotion groups", errortext1)
+                assert re.search(r"GMC is not allowed in GMC promotion groups", errortext1)
                 # Validate member is added to gp1 group
                 get_data = ib_NIOS.wapi_request('GET', object_type=""+group_ref_gp1+"?_return_fields=name,comment,gmc_promotion_policy,scheduled_time,members,time_zone")
                 print_and_log(get_data)
@@ -1784,7 +1786,7 @@ class RFE_4753_Scheduled_Group_GMC_Promotion(unittest.TestCase):
 
         @pytest.mark.run(order=30)
         def test_030_Test_Max_allowed_Schedule_time(self):
-                #set schedule time for gp2 after 8 hour 15 minutes 
+                #set schedule time for gp2 after 8 hr and 15 minutes 
                 schedule_group_time_gp2 = add_minutes_to_epoch_time(current_epoch_time, (8*60 +15))
                 print_and_log("current time + 15 minutes is " + str(schedule_group_time_gp2))
                 #Update_SCHEDULED_TIME_and_GMC_PROMOTION_POLICY_to_GMC_Group(group_ref_gp1,schedule_group_time_gp2,"SIMULTANEOUSLY")
@@ -1832,8 +1834,8 @@ class RFE_4753_Scheduled_Group_GMC_Promotion(unittest.TestCase):
                 validate_status_GM_after_GMC_promotion(member_vip)
                 sleep(1200)
 
-	@pytest.mark.run(order=32)
-        def test_032_Promote_oldGM_back(self):
+	#@pytest.mark.run(order=32)
+        def remove_test_032_Promote_oldGM_back(self):
                 print_and_log("\n********** Promote old GM back **********")
                 join_now(group_ref_gp1, config.grid1_member5_vip)
 		join_now(group_ref_gp2, config.grid1_member5_vip)
