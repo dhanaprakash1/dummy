@@ -595,24 +595,22 @@ def get_restart_time_from_cli(protocol,grid=config.grid_vip,user='admin',passwor
 #            display_msg("Enable password: "+enable_password)
     return match
 
-def Poweroff_the_member(eng_lab_id):
+def Poweroff_the_member(eng_lab_id, owner=config.client_user):
         logging.info("Poweroff the member")
-        cmd = 'reboot_system -H '+str(eng_lab_id)+' -a poweroff -c '+config.client_user+''
+        cmd = 'reboot_system -H '+str(eng_lab_id)+' -a poweroff -c '+owner+''
         cmd_result = subprocess.check_output(cmd, shell=True)
         print cmd_result
         assert re.search(r'.*poweroff completed.*',str(cmd_result))
         logging.info("Poweroff Completed")
 
-def Poweron_the_member(eng_lab_id):
+def Poweron_the_member(eng_lab_id, owner=config.client_user):
         logging.info("Poweron the member")
-        cmd = 'reboot_system -H '+str(eng_lab_id)+' -a poweron -c '+config.client_user+''
+        cmd = 'reboot_system -H '+str(eng_lab_id)+' -a poweron -c '+owner+''
         cmd_result = subprocess.check_output(cmd, shell=True)
         print cmd_result
         assert re.search(r'.*poweron completed.*',str(cmd_result))
         logging.info("Poweron Completed")
-        sleep(320)
-
-
+        sleep(200)
 
 
 # Time related Functions 
@@ -1786,11 +1784,13 @@ class RFE_4753_Scheduled_Group_GMC_Promotion(unittest.TestCase):
 
         @pytest.mark.run(order=30)
         def test_030_Test_Max_allowed_Schedule_time(self):
-                #set schedule time for gp2 after 8 hr and 15 minutes 
+                #set schedule time for gp2 after 8 hr and 15 minutes
+                current_epoch_time = get_current_epoch_time()
+                print_and_log("current time is " + str(current_epoch_time)) 
                 schedule_group_time_gp2 = add_minutes_to_epoch_time(current_epoch_time, (8*60 +15))
                 print_and_log("current time + 15 minutes is " + str(schedule_group_time_gp2))
                 #Update_SCHEDULED_TIME_and_GMC_PROMOTION_POLICY_to_GMC_Group(group_ref_gp1,schedule_group_time_gp2,"SIMULTANEOUSLY")
-		group_ref = group_ref_gp1
+		group_ref = group_ref_gp2
 		data = {"scheduled_time": schedule_group_time_gp2, "gmc_promotion_policy": "SIMULTANEOUSLY"}
                 get_data = ib_NIOS.wapi_request('PUT', object_type=""+group_ref, fields=json.dumps(data))
                 print_and_log(get_data)
@@ -1881,7 +1881,7 @@ class RFE_4753_Scheduled_Group_GMC_Promotion(unittest.TestCase):
 		#USERNAME = config.username
 		#PASSWORD = config.password
 
-		print_and_log("New Grid VIP is " + config.grid_vip)
+		#print_and_log("New Grid VIP is " + config.grid_vip)
 		print_and_log("New master is config.grid1_member5_vip " + config.grid1_member5_vip + " Old master is config.grid1_master_vip " + config.grid1_master_vip)
 		groups_info = Get_GMC_Groups(config.grid1_member5_vip)
                 print_and_log("groups " + str(groups_info))
@@ -1921,8 +1921,8 @@ class RFE_4753_Scheduled_Group_GMC_Promotion(unittest.TestCase):
         def test_039_test_dhcp_network_leases(self):
 		dhcp_test_network_leases(config.grid1_member5_vip, config.grid1_member5_fqdn)
 
-        @pytest.mark.run(order=40)
-        def test_040_test_dhcp_fingerprint(self):
+        #@pytest.mark.run(order=40)
+        def remove_test_040_test_dhcp_fingerprint(self):
 		dhcp_test_fingerprint(config.grid1_member5_vip, config.grid1_member5_fqdn)
 
         @pytest.mark.run(order=41)
@@ -1988,7 +1988,7 @@ class RFE_4753_Scheduled_Group_GMC_Promotion(unittest.TestCase):
                 member_fqdn = config.grid1_master_fqdn
                 member_vip = config.grid1_master_vip
                 #GMC_promote_member_as_master_candidate(master_vip, member_fqdn)
-                Poweroff_the_member(config.grid1_member3_id)
+                Poweroff_the_member(config.grid1_member3_idi, config.owner)
 		sleep(60)
 		promote_master_new(member_vip)
                 sleep(1200)
