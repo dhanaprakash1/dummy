@@ -1924,8 +1924,8 @@ class RFE_4753_Scheduled_Group_GMC_Promotion(unittest.TestCase):
 		dhcp_test_network_leases(config.grid1_member5_vip, config.grid1_member5_fqdn)
 
         #@pytest.mark.run(order=40)
-        def remove_test_040_test_dhcp_fingerprint(self):
-		dhcp_test_fingerprint(config.grid1_member5_vip, config.grid1_member5_fqdn)
+        #def remove_test_040_test_dhcp_fingerprint(self):
+		#dhcp_test_fingerprint(config.grid1_member5_vip, config.grid1_member5_fqdn)
 
         @pytest.mark.run(order=41)
         def test_041_test_dhcp_usage(self):
