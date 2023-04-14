@@ -1877,9 +1877,9 @@ class RFE_4753_Scheduled_Group_GMC_Promotion(unittest.TestCase):
 		"""
                 
 		#config.grid_vip = config.grid1_member5_vip
-		GRIDVIP = config.grid1_member5_vip
-		USERNAME = config.username
-		PASSWORD = config.password
+		#GRIDVIP = config.grid1_member5_vip
+		#USERNAME = config.username
+		#PASSWORD = config.password
 
 		print_and_log("New Grid VIP is " + config.grid_vip)
 		print_and_log("New master is config.grid1_member5_vip " + config.grid1_member5_vip + " Old master is config.grid1_master_vip " + config.grid1_master_vip)
