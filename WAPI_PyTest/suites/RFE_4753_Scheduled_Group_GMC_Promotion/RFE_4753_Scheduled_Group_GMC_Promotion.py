@@ -1658,7 +1658,7 @@ class RFE_4753_Scheduled_Group_GMC_Promotion(unittest.TestCase):
                 print_and_log(get_data)
                 errortext1 = get_data[1]
                 print_and_log(errortext1)
-                assert re.search(r"GMC is not allowed in GMC promotion groups", errortext1)
+                assert re.search(r"GMC members are not allowed in GMC promotion groups", errortext1)
                 """
 		# Validate member is added to gp1 group
                 get_data = ib_NIOS.wapi_request('GET', object_type=""+group_ref_gp1+"?_return_fields=name,comment,gmc_promotion_policy,scheduled_time,members,time_zone")
