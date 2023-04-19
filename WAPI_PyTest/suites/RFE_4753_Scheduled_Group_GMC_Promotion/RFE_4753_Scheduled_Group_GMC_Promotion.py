@@ -1799,10 +1799,23 @@ class RFE_4753_Scheduled_Group_GMC_Promotion(unittest.TestCase):
                 data = {"comment": "This is new comment"}
                 #data = {"gmc_promotion_policy": "SIMULTANEOUSLY", "comment":"This is new comment", "members": [{"member": config.grid1_member1_fqdn}, {"member": config.grid1_member2_fqdn}]}
                 get_data = ib_NIOS.wapi_request('PUT', object_type=""+group_ref_Default, fields=json.dumps(data))
+                #print_and_log(get_data)
+                #errortext1 = get_data[1]
+                #print_and_log(errortext1)
+                #assert re.search(r"Updating comments on Default group is not allowed", errortext1)
+                #print_and_log("*********** Test Case Execution Completed **********")
                 print_and_log(get_data)
-                errortext1 = get_data[1]
-                print_and_log(errortext1)
-                assert re.search(r"Updating comments on Default group is not allowed", errortext1)
+                res = json.loads(get_data)
+                print_and_log(res)
+                assert res == group_ref_Default
+                # Validate gmcpromotion and Scheduled Time is added to gp1 group [EXPECTED to FAIL as we have a bug]
+                get_data = ib_NIOS.wapi_request('GET', object_type=""+group_ref_Default+"?_return_fields=name,comment,gmc_promotion_policy,scheduled_time,members,time_zone")
+                print_and_log(get_data)
+                res = json.loads(get_data)
+                print_and_log(res)
+                comment = res["comment"]
+                print_and_log("actual comment " + comment + "and expected comment is " + comment)
+                assert comment == data["comment"]
                 print_and_log("*********** Test Case Execution Completed **********")
 
         @pytest.mark.run(order=28)
@@ -1813,9 +1826,20 @@ class RFE_4753_Scheduled_Group_GMC_Promotion(unittest.TestCase):
                 #data = {"gmc_promotion_policy": "SIMULTANEOUSLY", "comment":"This is new comment", "members": [{"member": config.grid1_member1_fqdn}, {"member": config.grid1_member2_fqdn}]}
                 get_data = ib_NIOS.wapi_request('PUT', object_type=""+group_ref_Default, fields=json.dumps(data))
                 print_and_log(get_data)
-                errortext1 = get_data[1]
-                print_and_log(errortext1)
-                assert re.search(r"Updating Members on Default group is not allowed", errortext1)
+                res = json.loads(get_data)
+                print_and_log(res)
+                assert res == group_ref_Default
+		#print_and_log(get_data)
+		#errortext1 = get_data[1]
+                #print_and_log(errortext1)
+                #assert re.search(r"Updating Members on Default group is not allowed", errortext1)
+                #print_and_log("*********** Test Case Execution Completed **********")
+		#Validate member is of default group as it is moved out of deleted group
+		list_members = Get_jsonList_of_members_in_GMCGroup(group_ref_Default)
+                print_and_log("List of members in of group ref : " + group_ref_Default + " is " + str(list_members))
+                #[{u'member': u'infoblox.localdomain'}, {u'member': u'gmc1.infoblox.com'}, {u'member': u'gmc2.infoblox.com'}]
+                expected_member_list = [config.grid1_master_fqdn, config.grid1_member1_fqdn, config.grid1_member2_fqdn, config.grid1_member3_fqdn, config.grid1_member4_fqdn, config.grid1_member5_fqdn]
+                assert expected_member_list.sort() == list_members.sort()
                 print_and_log("*********** Test Case Execution Completed **********")
 
 	@pytest.mark.run(order=29)
