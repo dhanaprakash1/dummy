@@ -1638,6 +1638,7 @@ class RFE_4753_Scheduled_Group_GMC_Promotion(unittest.TestCase):
 		print_and_log("get_data is " + str(get_data))
                 errortext1 = get_data[1]
                 print_and_log("error text is " + errortext1)
+                assert re.search(r"Access Denied: Only superusers are allowed to perform this operation on GMC Groups", errortext1)
                 assert re.search(r"Access Denied: Only superusers may add GMC Groups.", errortext1)
                 print_and_log("*********** Test Case Execution Completed **********")
 
@@ -1862,7 +1863,11 @@ class RFE_4753_Scheduled_Group_GMC_Promotion(unittest.TestCase):
 		data = {"scheduled_time": schedule_group_time_gp2, "gmc_promotion_policy": "SIMULTANEOUSLY"}
                 get_data = ib_NIOS.wapi_request('PUT', object_type=""+group_ref, fields=json.dumps(data))
                 print_and_log(get_data)
-                res = json.loads(get_data)
+                errortext1 = get_data[1]
+                print_and_log(errortext1)
+                assert re.search(r"Schedule time for the group cannot be set more than 8 hours from present time.", errortext1)
+		"""
+		res = json.loads(get_data)
                 print_and_log(res)
                 #assert res == group_ref
                 # Validate gmcpromotion and Scheduled Time is added to gp1 group [EXPECTED to FAIL as we have a bug]
@@ -1875,7 +1880,7 @@ class RFE_4753_Scheduled_Group_GMC_Promotion(unittest.TestCase):
                 print_and_log("gmc_policy and schedule time are :" + gmc_promotion_policy + " and  " + str(scheduled_time))
                 assert gmc_promotion_policy == data["gmc_promotion_policy"] and scheduled_time != data["scheduled_time"]
                 print_and_log("*********** Function Execution Completed **********")
-                
+                """
 		#reset schedule time for gp2 
                 schedule_group_time_gp2 = add_minutes_to_epoch_time(current_epoch_time, 15)
                 print_and_log("current time + 15 minutes is " + str(schedule_group_time_gp2))
@@ -1900,7 +1905,7 @@ class RFE_4753_Scheduled_Group_GMC_Promotion(unittest.TestCase):
 		promote_master_new(member_vip)
                 check_able_to_login_appliances(member_vip)
                 validate_status_GM_after_GMC_promotion(member_vip)
-                sleep(1500)
+                sleep(2000)
 
 	#@pytest.mark.run(order=32)
         def remove_test_032_Promote_oldGM_back(self):
@@ -2076,11 +2081,6 @@ class RFE_4753_Scheduled_Group_GMC_Promotion(unittest.TestCase):
                 data_gp2 = {"members":[{"member":config.grid1_member3_fqdn}]}
                 Add_Members_to_GMC_Group(group_ref_gp2, data_gp2, config.grid1_member5_vip)
 
-        @pytest.mark.run(order=47)
-        def test_047_Test_Edit_GMC_Group(self):
-                #NIOS-90730
-                # Create Group gp2
-		Poweroff_the_member("vm-15-71", config.owner)
 
 """
         @pytest.mark.run(order=138)
