@@ -291,6 +291,34 @@ def GMC_promote_member_as_master_candidate(master_vip, member_fqdn):
                 print_and_log("Success: set master candidate to true for member")
                 assert True
 
+def GMC_depromote_member_as_master_candidate(master_vip, member_fqdn):
+    print_and_log("\nFunction: GMC_promote_member_as_master_candidate for master " + master_vip + " member_fqdn is " + member_fqdn)
+    print_and_log("grid_master_vip is " + master_vip)
+    get_ref = ib_NIOS.wapi_request('GET', object_type="member", grid_vip=master_vip)
+    print_and_log(get_ref)
+    print_and_log("member_fqdn is " + member_fqdn)
+    for ref in json.loads(get_ref):
+        print_and_log(ref)
+        if member_fqdn in ref['_ref']: #if config.grid1_member2_fqdn in ref['_ref']:
+            print_and_log("grid_member _ref is " + ref['_ref'])
+            data = {"master_candidate": False}
+            #ref1 = json.loads(get_ref)[1]['_ref']
+            print_and_log("grid_master_vip is " + master_vip)
+            print_and_log("_ref is " + ref['_ref'])
+            print_and_log("data is " + str(data))
+            response = ib_NIOS.wapi_request('PUT', ref=ref['_ref'], fields=json.dumps(data), grid_vip=master_vip)
+            print_and_log(response)
+            if type(response) == tuple:
+                if response[0]==200:
+                    print_and_log("Success: set master candidate to true for member")
+                    assert True
+                else:
+                    print_and_log("Failure: Can't set master candidate to true for member")
+                    assert False
+            elif "member" in response:
+                print_and_log("Success: set master candidate to true for member")
+                assert True
+
 def promote_master(IP):
     print_and_log("\nFunction: promote_master")
     child1 = pexpect.spawn('ssh -o StrictHostKeyChecking=no admin@'+IP)
@@ -597,7 +625,8 @@ def get_restart_time_from_cli(protocol,grid=config.grid_vip,user='admin',passwor
 
 def Poweroff_the_member(eng_lab_id, owner=config.client_user):
         logging.info("Poweroff the member")
-        cmd = 'reboot_system -H '+str(eng_lab_id)+' -a poweroff -c '+owner+''
+        print_and_log("owner is " + owner)
+	cmd = 'reboot_system -H '+str(eng_lab_id)+' -a poweroff -c '+owner+''
         cmd_result = subprocess.check_output(cmd, shell=True)
         print cmd_result
         assert re.search(r'.*poweroff completed.*',str(cmd_result))
@@ -605,6 +634,7 @@ def Poweroff_the_member(eng_lab_id, owner=config.client_user):
 
 def Poweron_the_member(eng_lab_id, owner=config.client_user):
         logging.info("Poweron the member")
+	print_and_log("owner is " + owner)
         cmd = 'reboot_system -H '+str(eng_lab_id)+' -a poweron -c '+owner+''
         cmd_result = subprocess.check_output(cmd, shell=True)
         print cmd_result
@@ -1196,7 +1226,8 @@ class RFE_4753_Scheduled_Group_GMC_Promotion(unittest.TestCase):
 
         @pytest.mark.run(order=4)
         def test_004_Validate_Creation_of_GMC_Group(self):
-                print_and_log("\n********** Validate Creation of Group **********")
+                #NIOS-90545
+		print_and_log("\n********** Validate Creation of Group **********")
                 data = {"name":"gp1"}
                 get_data = ib_NIOS.wapi_request('POST', object_type="gmcgroup", fields=json.dumps(data))
 		print_and_log(get_data)
@@ -1223,7 +1254,10 @@ class RFE_4753_Scheduled_Group_GMC_Promotion(unittest.TestCase):
 
         @pytest.mark.run(order=6)
         def test_006_Validate_Creation_of_GMC_Group_with_members(self):
-                print_and_log("\n********** Validate Creation of Group with members **********")
+                #NIOS-91207
+                #NIOS-89441
+                #NIOS-90033
+		print_and_log("\n********** Validate Creation of Group with members **********")
                 #config.grid1_member2_fqdn = gmc1.infoblox.com
 		current_epoch_time = get_current_epoch_time()
                 print_and_log("current time is " + str(current_epoch_time))
@@ -1247,7 +1281,8 @@ class RFE_4753_Scheduled_Group_GMC_Promotion(unittest.TestCase):
 
         @pytest.mark.run(order=7)
         def test_007_Validate_Creation_of_GMC_Group_with_Duplicate_members(self):
-                print_and_log("\n********** Validate Creation of Group with members **********")
+                #NIOS-90375
+		print_and_log("\n********** Validate Creation of Group with members **********")
                 #config.grid1_member1_fqdn = "vm-ha1.infoblox.com" 
 		#config.grid1_member2_fqdn = "vm-sa1.infoblox.com"
 		current_epoch_time = get_current_epoch_time()
@@ -1294,7 +1329,8 @@ class RFE_4753_Scheduled_Group_GMC_Promotion(unittest.TestCase):
 
         @pytest.mark.run(order=10)
         def test_010_Validate_Adding_Members_to_GMC_Group(self):
-                print_and_log("\n********** Validate Addition of Members to GMC Group **********")
+                #NIOS-89439
+		print_and_log("\n********** Validate Addition of Members to GMC Group **********")
 		#member_name = "vm-sa1.infoblox.com"
                 #member_name = config.grid1_member2_fqdn
 		data = 	{"members":[{"member": config.grid1_member1_fqdn}, {"member": config.grid1_member2_fqdn}]}
@@ -1332,7 +1368,8 @@ class RFE_4753_Scheduled_Group_GMC_Promotion(unittest.TestCase):
 
         @pytest.mark.run(order=11)
         def test_011_Validate_Changing_order_of_Members_to_GMC_Group(self):
-                print_and_log("\n********** Validate Changing Order of Members to GMC Group **********")
+                #NIOS-90297
+		print_and_log("\n********** Validate Changing Order of Members to GMC Group **********")
                 data =  {"members":[{"member": config.grid1_member2_fqdn}, {"member": config.grid1_member1_fqdn}]}
                 #data = {"members":[{"member":"vm-sa1.infoblox.com"}]}
                 print_and_log("member data :"+ str(data))
@@ -1368,7 +1405,8 @@ class RFE_4753_Scheduled_Group_GMC_Promotion(unittest.TestCase):
 
         @pytest.mark.run(order=12)
         def test_012_Validate_Changing_Policy_does_not_change_order_of_Members_to_GMC_Group(self):
-                print_and_log("\n********** Validate Changing Policy does not change Order of Members to GMC Group **********")
+                #NIOS-90619
+		print_and_log("\n********** Validate Changing Policy does not change Order of Members to GMC Group **********")
                 data =  {"gmc_promotion_policy": "SEQUENTIALLY"}
                 #data = {"members":[{"member":"vm-sa1.infoblox.com"}]}
                 print_and_log("member data :"+ str(data))
@@ -1429,7 +1467,8 @@ class RFE_4753_Scheduled_Group_GMC_Promotion(unittest.TestCase):
 
         @pytest.mark.run(order=13)
         def test_013_Validate_Updating_SCHEDULED_TIME_and_GMC_PROMOTION_POLICY_to_GMC_Group(self):
-                print_and_log("\n********** Validate Updation of Scheduled Time and GMC Promotion Policy to GMC Group **********")
+                #NIOS-90717
+		print_and_log("\n********** Validate Updation of Scheduled Time and GMC Promotion Policy to GMC Group **********")
                 #get scheduled time                
 		current_epoch_time = get_current_epoch_time()
                 print_and_log("current time is " + str(current_epoch_time))
@@ -1467,18 +1506,21 @@ class RFE_4753_Scheduled_Group_GMC_Promotion(unittest.TestCase):
 
         @pytest.mark.run(order=15)
         def test_015_Validate_Updating_GMC_PROMOTION_POLICY_to_Default_GMC_Group(self):
-                print_and_log("\n********** Validate Updation of GMC Promotion Policy to GMC Group **********")
+                #NIOS-90725
+		print_and_log("\n********** Validate Updation of GMC Promotion Policy to GMC Group **********")
                 data = {"gmc_promotion_policy": "SEQUENTIALLY"}
+		#data = {"gmc_promotion_policy": "SIMULTANEOUSLY", "comment":"This is new comment", "members": [{"member": config.grid1_member1_fqdn}, {"member": config.grid1_member2_fqdn}]}
                 get_data = ib_NIOS.wapi_request('PUT', object_type=""+group_ref_Default, fields=json.dumps(data))
                 print_and_log(get_data)
                 errortext1 = get_data[1]
                 print_and_log(errortext1)
-                assert re.search(r"Upating promotion policy on Default group is not allowed", errortext1)
+                assert re.search(r"Updating promotion policy on Default group is not allowed", errortext1)
                 print_and_log("*********** Test Case Execution Completed **********")
 
         @pytest.mark.run(order=16)
         def test_016_Validate_Updating_SCHEDULED_TIME_to_Default_GMC_Group(self):
-                print_and_log("\n********** Validate Updation of Scheduled Time to GMC Group **********")
+                #NIOS-90725
+		print_and_log("\n********** Validate Updation of Scheduled Time to GMC Group **********")
 		#get scheduled time                
                 current_epoch_time = get_current_epoch_time()
                 print_and_log("current time is " + str(current_epoch_time))
@@ -1489,9 +1531,8 @@ class RFE_4753_Scheduled_Group_GMC_Promotion(unittest.TestCase):
                 print_and_log(get_data)
                 errortext1 = get_data[1]
                 print_and_log(errortext1)
-                assert re.search(r"Upating scheduled time on default group is not allowed", errortext1)
+                assert re.search(r"Updating scheduled time on default group is not allowed", errortext1)
                 print_and_log("*********** Test Case Execution Completed **********")
-
 
 	# GMC Schedule Object Testing
         @pytest.mark.run(order=17)
@@ -1533,7 +1574,8 @@ class RFE_4753_Scheduled_Group_GMC_Promotion(unittest.TestCase):
 
         @pytest.mark.run(order=19)
         def test_019_Activating_GMC_Schedule_as_nonsuperuser(self):
-                print_and_log("\n********** Activating GMC Schedule as nonsuperuser **********")
+                #NIOS-90631
+		print_and_log("\n********** Activating GMC Schedule as nonsuperuser **********")
 		#non_super_user_group1_name = "non_super_group1"
 		#non_super_user_group1_username1 = "ns_group1_user1"
 		#non_super_user_group1_password1 = "infoblox"
@@ -1557,6 +1599,13 @@ class RFE_4753_Scheduled_Group_GMC_Promotion(unittest.TestCase):
                 assert re.search(r"Access Denied", errortext1)
                 #assert re.search(r"Only superusers are allowed to perform this operation on GMC Groups", errortext1)
 		#assert res == "gmcschedule/"+group_schedule_ref
+		# Deactivating GMC schedule
+		data = {"activate_gmc_group_schedule": False}
+                get_data = ib_NIOS.wapi_request('PUT', object_type="gmcschedule/"+group_schedule_ref, fields=json.dumps(data), user=non_super_user_group1_username1, password=non_super_user_group1_password1)
+                print_and_log("get_data is " + str(get_data))
+                errortext1 = get_data[1]
+                print_and_log("error text is " + errortext1)
+                assert re.search(r"Access Denied", errortext1)
                 """
 		# Validate GMC schedule is active
                 get_data = ib_NIOS.wapi_request('GET', object_type="gmcschedule/"+group_schedule_ref+"?_return_fields=activate_gmc_group_schedule,gmc_groups")
@@ -1576,14 +1625,21 @@ class RFE_4753_Scheduled_Group_GMC_Promotion(unittest.TestCase):
 		"""
 
         @pytest.mark.run(order=20)
-        def test_020_Activating_GMC_Schedule(self):
-                object_type_string = 'admingroup?name=' + non_super_user_group1_name 
-                #res = ib_NIOS.wapi_request('GET',object_type='admingroup?name=non_super_group1')
-                res = ib_NIOS.wapi_request('GET',object_type=object_type_string)
-                res = json.loads(res)
-                print_and_log("res is " + str(res))
-                ref1=res[0]['_ref']
-                print_and_log("nonsuperuser ref " + ref1)
+        def test_020_Adding_GMC_Group_as_nonsuperuser(self):
+                #NIOS-90632
+		print_and_log("\n********** Validate Creation of Group with members **********")
+                #config.grid1_member2_fqdn = gmc1.infoblox.com
+                current_epoch_time = get_current_epoch_time()
+                print_and_log("current time is " + str(current_epoch_time))
+                schedule_group_time = add_minutes_to_epoch_time(current_epoch_time, 10)
+                print_and_log("current time + 10 minutes is " + str(schedule_group_time))
+                data = {"name":"gp4","gmc_promotion_policy": "SIMULTANEOUSLY","members": [{"member": config.grid1_member1_fqdn}, {"member": config.grid1_member2_fqdn}],"scheduled_time": schedule_group_time}
+                get_data = ib_NIOS.wapi_request('POST', object_type="gmcgroup", fields=json.dumps(data), user=non_super_user_group1_username1, password=non_super_user_group1_password1)
+		print_and_log("get_data is " + str(get_data))
+                errortext1 = get_data[1]
+                print_and_log("error text is " + errortext1)
+                assert re.search(r"Access Denied: Only superusers may add GMC Groups.", errortext1)
+                print_and_log("*********** Test Case Execution Completed **********")
 
         @pytest.mark.run(order=21)
     	def test_021_Making_normal_member_as_GMC(self):
@@ -1675,7 +1731,8 @@ class RFE_4753_Scheduled_Group_GMC_Promotion(unittest.TestCase):
 
         @pytest.mark.run(order=24)
         def test_024_Validate_Deletion_of_GMC_Group(self):
-                print_and_log("\n********** Validate Deletion of GMC Group **********")
+                #NIOS-89440
+		print_and_log("\n********** Validate Deletion of GMC Group **********")
                 get_data = ib_NIOS.wapi_request('DELETE', object_type=""+group_ref_gp1)
                 print_and_log(get_data)
                 res = json.loads(get_data)
@@ -1735,26 +1792,35 @@ class RFE_4753_Scheduled_Group_GMC_Promotion(unittest.TestCase):
                 sleep(600)
 
         @pytest.mark.run(order=27)
-        def test_027_test_epoch_time(self):
-		#sleep(620)
-                print_and_log("\n********** Promote GMC as GM **********")
-		current_epoch_time = get_current_epoch_time()
-		print_and_log("current time is " + str(current_epoch_time))
-                schedule_group_time = add_minutes_to_epoch_time(current_epoch_time, 10)
-                print_and_log("current time + 10 minutes is " + str(schedule_group_time))
+        def test_027_Validate_Updating_Comment_to_Default_GMC_Group(self):
+		#NIOS-90725
+                print_and_log("\n********** Validate Updation of GMC Promotion Policy to GMC Group **********")
+                data = {"comment": "This is new comment"}
+                #data = {"gmc_promotion_policy": "SIMULTANEOUSLY", "comment":"This is new comment", "members": [{"member": config.grid1_member1_fqdn}, {"member": config.grid1_member2_fqdn}]}
+                get_data = ib_NIOS.wapi_request('PUT', object_type=""+group_ref_Default, fields=json.dumps(data))
+                print_and_log(get_data)
+                errortext1 = get_data[1]
+                print_and_log(errortext1)
+                assert re.search(r"Updating comments on Default group is not allowed", errortext1)
+                print_and_log("*********** Test Case Execution Completed **********")
 
         @pytest.mark.run(order=28)
-        def test_028_test_member_ips(self):
-                print_and_log("\n********** Test config *********")
-                #print_and_log("grid master ip " + str(grid_master_vip))
-                #print_and_log("grid grid_member_fqdn " + str(grid_member_fqdn))
-                #print_and_log("grid grid_member1_vip " + str(grid_member1_vip))
-                #print_and_log("grid grid_member1_fqdn " + str(grid_member1_fqdn))
-                print_and_log("grid config.grid1_member1_fqdn " + config.grid1_member1_fqdn)
+        def test_028_Validate_Updating_Members_to_Default_GMC_Group(self):
+		#NIOS-90725
+                print_and_log("\n********** Validate Updation of GMC Promotion Policy to GMC Group **********")
+                data = {"members": [{"member": config.grid1_member1_fqdn}, {"member": config.grid1_member2_fqdn}]}
+                #data = {"gmc_promotion_policy": "SIMULTANEOUSLY", "comment":"This is new comment", "members": [{"member": config.grid1_member1_fqdn}, {"member": config.grid1_member2_fqdn}]}
+                get_data = ib_NIOS.wapi_request('PUT', object_type=""+group_ref_Default, fields=json.dumps(data))
+                print_and_log(get_data)
+                errortext1 = get_data[1]
+                print_and_log(errortext1)
+                assert re.search(r"Updating Members on Default group is not allowed", errortext1)
+                print_and_log("*********** Test Case Execution Completed **********")
 
 	@pytest.mark.run(order=29)
         def test_029_Test_Setting_Schedule_for_GMC_Promotion(self):
-                print_and_log("\n********** Test_Scheduled_GMC_Promotion *********")
+                #NIOS-90941 partial
+		print_and_log("\n********** Test_Scheduled_GMC_Promotion *********")
                 # Create Group gp1
                 #config.grid1_member1_fqdn = "ib-10-35-196-6.infoblox.com"
 		#config.grid1_member2_fqdn = "ib-10-35-193-14.infoblox.com"
@@ -1905,7 +1971,8 @@ class RFE_4753_Scheduled_Group_GMC_Promotion(unittest.TestCase):
 
         @pytest.mark.run(order=35)
         def test_035_test_dns_zone_arecords(self):
-                dns_test_zone_arecords(config.grid1_member5_vip, config.grid1_member5_fqdn)
+                #NIOS-90961
+		dns_test_zone_arecords(config.grid1_member5_vip, config.grid1_member5_fqdn)
 
         @pytest.mark.run(order=36)
         def test_036_test_dns_zone_allrecords_restart_simultaneously(self):
@@ -1942,7 +2009,8 @@ class RFE_4753_Scheduled_Group_GMC_Promotion(unittest.TestCase):
 
         @pytest.mark.run(order=44)
         def test_044_Test_Setting_Schedule_for_GMC_Promotion(self):
-                print_and_log("\n********** Test_Scheduled_GMC_Promotion *********")
+                #NIOS-90772
+		print_and_log("\n********** Test_Scheduled_GMC_Promotion *********")
                 # Create Group gp1
                 #config.grid1_member1_fqdn = "ib-10-35-196-6.infoblox.com"
                 #config.grid1_member2_fqdn = "ib-10-35-193-14.infoblox.com"
@@ -1952,9 +2020,9 @@ class RFE_4753_Scheduled_Group_GMC_Promotion(unittest.TestCase):
 		#Deactivate_GMC_Schedule(config.grid1_member5_vip)
                 #Delete_GMC_Group(group_ref_gp1, config.grid1_member5_vip)
                 #Delete_GMC_Group(group_ref_gp2, config.grid1_member5_vip)   
-
+                
                 #group_ref_gp1 = Create_GMC_Group("gp1", config.grid1_member5_vip) #uncomment this
-                data_gp1 = {"members":[{"member":config.grid1_member1_fqdn}, {"member":config.grid1_member2_fqdn}]}
+                data_gp1 = {"members":[{"member":config.grid1_member2_fqdn}]}
                 #data_gp1_json = json.dumps(data_gp1)
                 print_and_log("Data is " + str(data_gp1))
                 Add_Members_to_GMC_Group(group_ref_gp1, data_gp1, config.grid1_member5_vip)
@@ -1978,26 +2046,42 @@ class RFE_4753_Scheduled_Group_GMC_Promotion(unittest.TestCase):
 
         @pytest.mark.run(order=45)
 	def test_045_Test_Scheduled_GMC_Promotion(self):
-                # Activate GMC group schedule
+                #NIOS-91351
+		# Activate GMC group schedule
                 #Activate_GMC_Schedule(config.grid1_member5_vip)
 
                 #config.grid_vip = "10.35.135.10"
                 #config.member5_fqdn = "ib-10-35-112-3.infoblox.com"
                 #config.grid_member5_vip = "10.35.112.3" 
-
+                #GMC_Depromote_member_as_master_candidate(master_vip, member_fqdn)
                 # Promote Master
                 master_vip = config.grid1_member5_vip
-                member_fqdn = config.grid1_master_fqdn
-                member_vip = config.grid1_master_vip
-                #GMC_promote_member_as_master_candidate(master_vip, member_fqdn)
-                Poweroff_the_member(config.grid1_member3_idi, config.owner)
+                member_fqdn = config.grid1_member1_fqdn
+                member_vip = config.grid1_member1_ha_vip
+                GMC_promote_member_as_master_candidate(master_vip, member_fqdn)
+                Poweroff_the_member(config.grid1_member3_id, config.owner)
 		sleep(60)
 		promote_master_new(member_vip)
                 sleep(1200)
                 join_now(group_ref_gp2, member_vip)
                 sleep(300)
-		check_able_to_login_appliances(member_vip)
+		#check_able_to_login_appliances(member_vip)
                 validate_status_GM_after_GMC_promotion(member_vip)
+
+        @pytest.mark.run(order=46)
+        def test_046_Test_Edit_GMC_Group(self):
+                #NIOS-90730
+		# Create Group gp2
+                #group_ref_gp2 = Create_GMC_Group("gp2", config.grid1_member5_vip) #uncomment this
+                data_gp2 = {"members":[{"member":config.grid1_member3_fqdn}]}
+                Add_Members_to_GMC_Group(group_ref_gp2, data_gp2, config.grid1_member5_vip)
+
+        @pytest.mark.run(order=47)
+        def test_047_Test_Edit_GMC_Group(self):
+                #NIOS-90730
+                # Create Group gp2
+		Poweroff_the_member("vm-15-71", config.owner)
+
 """
         @pytest.mark.run(order=138)
         def test_138_Promote_oldGM_back(self):
