@@ -1925,7 +1925,7 @@ class RFE_4753_Scheduled_Group_GMC_Promotion(unittest.TestCase):
                 member_fqdn = config.grid1_member5_fqdn
                 member_vip = config.grid1_member5_vip
                 GMC_promote_member_as_master_candidate(master_vip, member_fqdn)
-                sleep(180)
+                sleep(300)
 		promote_master_new(member_vip)
                 check_able_to_login_appliances(member_vip)
                 validate_status_GM_after_GMC_promotion(member_vip)
@@ -1933,7 +1933,7 @@ class RFE_4753_Scheduled_Group_GMC_Promotion(unittest.TestCase):
 
 	#@pytest.mark.run(order=32)
         def remove_test_032_Promote_oldGM_back(self):
-                print_and_log("\n********** Promote old GM back **********")
+                print_and_log("\n********** work around test case when scheduled time day light saving stopped the promotion from commpleting on time  **********")
                 join_now(group_ref_gp1, config.grid1_member5_vip)
 		join_now(group_ref_gp2, config.grid1_member5_vip)
 		sleep(600)
@@ -2093,9 +2093,10 @@ class RFE_4753_Scheduled_Group_GMC_Promotion(unittest.TestCase):
 		promote_master_new(member_vip)
                 sleep(1200)
                 join_now(group_ref_gp2, member_vip)
-                sleep(300)
+                sleep(1200)
 		#check_able_to_login_appliances(member_vip)
                 validate_status_GM_after_GMC_promotion(member_vip)
+		sleep(300)                
 
         @pytest.mark.run(order=46)
         def test_046_Test_Edit_GMC_Group(self):
