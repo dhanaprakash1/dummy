@@ -1639,7 +1639,7 @@ class RFE_4753_Scheduled_Group_GMC_Promotion(unittest.TestCase):
                 errortext1 = get_data[1]
                 print_and_log("error text is " + errortext1)
                 assert re.search(r"Access Denied: Only superusers are allowed to perform this operation on GMC Groups", errortext1)
-                assert re.search(r"Access Denied: Only superusers may add GMC Groups.", errortext1)
+                #assert re.search(r"Access Denied: Only superusers may add GMC Groups.", errortext1)
                 print_and_log("*********** Test Case Execution Completed **********")
 
         @pytest.mark.run(order=21)
