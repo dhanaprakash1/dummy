@@ -1929,7 +1929,7 @@ class RFE_4753_Scheduled_Group_GMC_Promotion(unittest.TestCase):
 		promote_master_new(member_vip)
                 check_able_to_login_appliances(member_vip)
                 validate_status_GM_after_GMC_promotion(member_vip)
-                sleep(2000)
+                sleep(2400)
 
 	#@pytest.mark.run(order=32)
         def remove_test_032_Promote_oldGM_back(self):
@@ -2089,7 +2089,7 @@ class RFE_4753_Scheduled_Group_GMC_Promotion(unittest.TestCase):
                 member_vip = config.grid1_member1_ha_vip
                 GMC_promote_member_as_master_candidate(master_vip, member_fqdn)
                 Poweroff_the_member(config.grid1_member3_id, config.owner)
-		sleep(60)
+		sleep(300)
 		promote_master_new(member_vip)
                 sleep(1200)
                 join_now(group_ref_gp2, member_vip)
