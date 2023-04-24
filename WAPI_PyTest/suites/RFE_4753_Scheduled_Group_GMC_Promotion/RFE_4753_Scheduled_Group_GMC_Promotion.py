@@ -1925,8 +1925,9 @@ class RFE_4753_Scheduled_Group_GMC_Promotion(unittest.TestCase):
                 member_fqdn = config.grid1_member5_fqdn
                 member_vip = config.grid1_member5_vip
                 GMC_promote_member_as_master_candidate(master_vip, member_fqdn)
-                sleep(300)
+                sleep(600)
 		promote_master_new(member_vip)
+                sleep(120)
                 check_able_to_login_appliances(member_vip)
                 validate_status_GM_after_GMC_promotion(member_vip)
                 sleep(2400)
@@ -2096,7 +2097,7 @@ class RFE_4753_Scheduled_Group_GMC_Promotion(unittest.TestCase):
                 sleep(1200)
 		#check_able_to_login_appliances(member_vip)
                 validate_status_GM_after_GMC_promotion(member_vip)
-		sleep(300)                
+		sleep(1200)                
 
         @pytest.mark.run(order=46)
         def test_046_Test_Edit_GMC_Group(self):
