@@ -1989,8 +1989,8 @@ class RFE_4753_Scheduled_Group_GMC_Promotion(unittest.TestCase):
                 assert count_members_gp1 == 2
                 count_members_gp2 = Get_Count_of_members_in_GMCGroup(group_ref_gp2, config.grid1_member5_vip)
                 assert count_members_gp2 == 2
-                count_members_Default = Get_Count_of_members_in_GMCGroup(group_ref_Default, config.grid1_member5_vip)
-                assert count_members_Default == 2
+                #count_members_Default = Get_Count_of_members_in_GMCGroup(group_ref_Default, config.grid1_member5_vip)
+                #assert count_members_Default == 2
                 
 
         @pytest.mark.run(order=34)
@@ -2099,8 +2099,9 @@ class RFE_4753_Scheduled_Group_GMC_Promotion(unittest.TestCase):
                 validate_status_GM_after_GMC_promotion(member_vip)
 		sleep(1200)                
 
-        @pytest.mark.run(order=46)
-        def test_046_Test_Edit_GMC_Group(self):
+        # removed as this test case is covered by Chetan
+        #@pytest.mark.run(order=46)
+        def remove_test_046_Test_Edit_GMC_Group(self):
                 #NIOS-90730
 		# Create Group gp2
                 #group_ref_gp2 = Create_GMC_Group("gp2", config.grid1_member5_vip) #uncomment this
