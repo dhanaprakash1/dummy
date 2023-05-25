@@ -2074,8 +2074,9 @@ class RFE_4753_Scheduled_Group_GMC_Promotion(unittest.TestCase):
                 print_and_log("current time + 15 minutes is " + str(schedule_group_time_gp2))
                 Update_SCHEDULED_TIME_and_GMC_PROMOTION_POLICY_to_GMC_Group(group_ref_gp2,schedule_group_time_gp2,"SIMULTANEOUSLY", config.grid1_member5_vip)
 
-        @pytest.mark.run(order=45)
-	def test_045_Test_Scheduled_GMC_Promotion(self):
+        # removed as join now is covered by Chetan 
+        #@pytest.mark.run(order=45)
+	def remove_test_045_Test_Scheduled_GMC_Promotion(self):
                 #NIOS-91351
 		# Activate GMC group schedule
                 #Activate_GMC_Schedule(config.grid1_member5_vip)
